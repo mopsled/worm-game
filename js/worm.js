@@ -109,7 +109,7 @@ function updateBoard() {
 		worm.previousCells.push(position);
 		
 		// Keep previousCells.length to a maximum size of worm.maxSize
-		if(worm.previousCells.length > worm.maxSize) {
+		while(worm.previousCells.length > worm.maxSize) {
 			worm.previousCells.shift();
 		}
 	}
@@ -128,10 +128,12 @@ function updateBoard() {
 
 	drawWorm(game.context);
 	
-	if(game.dot.exists) {
-		drawDot(game.context);
-	} else {
-		makeRandomDot();
+	if(worm.direction != 'none') {
+		if(game.dot.exists) {
+			drawDot(game.context);
+		} else {
+			makeRandomDot();
+		}
 	}
 
 
@@ -365,43 +367,37 @@ function resetBoard() {
 }
 
 function makeRandomDot() {
-	if(worm.direction != 'none') {
+	var position = getUnusedPosition();
+	
+	game.dot.x = position.x;
+	game.dot.y = position.y;
+
+	game.dot.color = DOT_COLORS[Math.floor(DOT_COLORS.length*Math.random())];
+	game.dot.timeToLiveThisStage = game.dot.timePerStage;
+	game.dot.value = game.dot.maxValue;
+	game.dot.exists = true;
+}
+
+function getUnusedPosition() {
+	var positionInWorm = true;
+
+	while(positionInWorm) {
 		var position = {
 			x: Math.floor(Math.random() * game.grid.width/game.grid.size),
 			y: Math.floor(Math.random() * game.grid.height/game.grid.size)
 		};
-		
-		var inThere = false;
-		for(var n = 0; n != worm.length - 1; n++) {
-			if(position.x == worm.previousCells[worm.previousCells.length - n - 1].x &&
-				position.y == worm.previousCells[worm.previousCells.length - n - 1].y) {
-				inThere = true;
-			}
-		}
-		
-		while(inThere) {
-			position = {
-				x: Math.floor(Math.random() * game.grid.width/game.grid.size),
-				y: Math.floor(Math.random() * game.grid.height/game.grid.size)
-			};
-			
-			inThere = false;
-			for(var n = 0; n != worm.length - 1; n++) {
-				if(position.x == worm.previousCells[worm.previousCells.length - n - 1].x &&
-					position.y == worm.previousCells[worm.previousCells.length - n - 1].y) {
-					inThere = true;
-				}
-			}
-		}
-		
-		game.dot.x = position.x;
-		game.dot.y = position.y;
+		positionInWorm = false;
 
-		game.dot.color = DOT_COLORS[Math.floor(DOT_COLORS.length*Math.random())];
-		game.dot.timeToLiveThisStage = game.dot.timePerStage;
-		game.dot.value = game.dot.maxValue;
-		game.dot.exists = true;
+		var lastCellInWorm = worm.previousCells.length - worm.length;
+		for(var i = worm.previousCells.length - 1; i > lastCellInWorm; --i) {
+			if(position.x == worm.previousCells[i].x && position.y == worm.previousCells[i].y) {
+				positionInWorm = true;
+				break;
+			}
+		}
 	}
+
+	return position;
 }
 
 function wormKeyHit(e) {
@@ -460,6 +456,12 @@ function wormKeyHit(e) {
 			if(worm.direction != 'none')
 				worm.length += 1;
 			break;
+
+		// 'd' key
+		case 68:
+			if(worm.direction != 'none')
+				makeRandomDot();
+			break;
 			
 		// 'p' key
 		case 80:
@@ -496,7 +498,6 @@ Number.prototype.mod = function(n) {
 	return ((this%n)+n)%n;
 }
 
-// When the page loads, launch the init() function
 $(document).ready(function() {
 	init();
 });
