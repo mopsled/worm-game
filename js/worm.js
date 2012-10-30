@@ -227,16 +227,6 @@ function resetCanvas(canvas) {
 function drawGrid(context) {
 	// Draw the smaller vertical lines
 	context.beginPath();
-	for(var x = game.grid.offsetX + game.grid.size + 0.5; x <= game.grid.offsetX + game.grid.width; x += game.grid.size) {
-		context.moveTo(x, game.grid.offsetY);
-		context.lineTo(x, game.grid.height + game.grid.offsetY);
-	}
-	
-	// Draw the smaller horizontal lines
-	for(var y = game.grid.offsetY + game.grid.size + 0.5; y <= game.grid.offsetY + game.grid.height; y += game.grid.size) {
-		context.moveTo(game.grid.offsetX, y);
-		context.lineTo(game.grid.width + game.grid.offsetX, y);
-	}
 	
 	context.closePath();
 	context.lineWidth = GRID_INNER_WIDTH;
@@ -258,10 +248,10 @@ function drawGrid(context) {
 
 function drawWorm(context) {
 	// Draw the head-end dot of the worm (always visible)
-	context.fillStyle = '#000';
-	context.fillRect(game.grid.offsetX + worm.position.x * game.grid.size + .5, 
+	context.fillStyle = '#000000';
+	context.fillRect(game.grid.offsetX + worm.position.x * game.grid.size - .5, 
 		game.grid.offsetY + worm.position.y * game.grid.size + .5, 
-		game.grid.size, game.grid.size);
+		game.grid.size + 1, game.grid.size + 1);
 	
 	// If the worm is longer than one block
 	if(worm.length > 1) {
@@ -273,11 +263,11 @@ function drawWorm(context) {
 		// For each of the rest of the blocks in the worm's tail
 		for(var n = worm.length - 1; n != 0; n--) {
 			// Do some math magic to create a gradient for the tail
-			context.fillStyle = 'rgb(' + Math.floor(0xbb/worm.length * n) + ', ' + 
-				Math.floor(0xbb/worm.length * n) + ', ' + Math.floor(0xbb/worm.length * n) + ')';
-			context.fillRect(game.grid.offsetX + worm.previousCells[worm.previousCells.length-n].x * game.grid.size + .5, 
+			context.fillStyle = 'rgb(' + Math.floor(0x00/worm.length * n) + ', ' + 
+				Math.floor(0xbb/worm.length * n) + ', ' + Math.floor(0x00/worm.length * n) + ')';
+			context.fillRect(game.grid.offsetX + worm.previousCells[worm.previousCells.length-n].x * game.grid.size - .5, 
 				game.grid.offsetY + worm.previousCells[worm.previousCells.length-n].y * game.grid.size + .5, 
-				game.grid.size, game.grid.size);
+				game.grid.size + 1, game.grid.size + 1);
 		}
 	}
 }
