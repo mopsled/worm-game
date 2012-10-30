@@ -239,9 +239,9 @@ function drawGrid(context) {
 function drawWorm(context) {
 	// Draw the head-end dot of the worm (always visible)
 	context.fillStyle = '#000';
-	context.fillRect(game.grid.offsetX + worm.position.x * game.grid.size + .5, 
+	context.fillRect(game.grid.offsetX + worm.position.x * game.grid.size - .5, 
 		game.grid.offsetY + worm.position.y * game.grid.size + .5, 
-		game.grid.size, game.grid.size);
+		game.grid.size + 1, game.grid.size + 1);
 	
 	// If the worm is longer than one block
 	if(worm.length > 1) {
@@ -255,9 +255,9 @@ function drawWorm(context) {
 			// Do some math magic to create a gradient for the tail
 			context.fillStyle = 'rgb(' + Math.floor(0xbb/worm.length * n) + ', ' + 
 				Math.floor(0xbb/worm.length * n) + ', ' + Math.floor(0xbb/worm.length * n) + ')';
-			context.fillRect(game.grid.offsetX + worm.previousCells[worm.previousCells.length-n].x * game.grid.size + .5, 
+			context.fillRect(game.grid.offsetX + worm.previousCells[worm.previousCells.length-n].x * game.grid.size - .5, 
 				game.grid.offsetY + worm.previousCells[worm.previousCells.length-n].y * game.grid.size + .5, 
-				game.grid.size, game.grid.size);
+				game.grid.size + 1, game.grid.size + 1);
 		}
 	}
 }
