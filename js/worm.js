@@ -98,41 +98,8 @@ function init() {
 
 // Redraw the board
 function updateBoard() {
-	var context = game.context;
-
-	// Reset the board
-	game.canvas.height = game.canvas.height;
-	game.canvas.width = game.canvas.width;
-	
-	// Draw the smaller vertical lines
-	context.beginPath();
-	for(var x = game.grid.offsetX + game.grid.size + 0.5; x <= game.grid.offsetX + game.grid.width; x += game.grid.size) {
-		context.moveTo(x, game.grid.offsetY);
-		context.lineTo(x, game.grid.height + game.grid.offsetY);
-	}
-	
-	// Draw the smaller horizontal lines
-	for(var y = game.grid.offsetY + game.grid.size + 0.5; y <= game.grid.offsetY + game.grid.height; y += game.grid.size) {
-		context.moveTo(game.grid.offsetX, y);
-		context.lineTo(game.grid.width + game.grid.offsetX, y);
-	}
-	
-	context.closePath();
-	context.lineWidth = GRID_INNER_WIDTH;
-	context.strokeStyle = GRID_INNER_COLOR;
-	context.stroke();
-	
-	// Draw the outer boundry of the board
-	context.beginPath();
-	context.moveTo(game.grid.offsetX, game.grid.offsetY);
-	context.lineTo(game.grid.offsetX, game.grid.offsetY + game.grid.height);
-	context.lineTo(game.grid.offsetX + game.grid.width, game.grid.offsetY + game.grid.height)
-	context.lineTo(game.grid.offsetX + game.grid.width, game.grid.offsetY);
-	context.lineTo(game.grid.offsetX, game.grid.offsetY);
-	context.strokeStyle = GRID_OUTER_COLOR;
-	context.lineWidth = GRID_OUTER_WIDTH;
-	context.closePath();
-	context.stroke();
+	resetCanvas(game.canvas);
+	drawGrid(game.context);
 	
 	// If the worm is currently playing, add its current position to previousCells
 	if(worm.direction != 'none') {
@@ -146,7 +113,46 @@ function updateBoard() {
 			worm.previousCells.shift();
 		}
 	}
+
+	moveWorm();
 	
+	// If the worm's position lies outside of the board, reset the board
+	var lessThanX = worm.position.x < 0;
+	var lessThanY = worm.position.y < 0;
+	var greaterThanx = worm.position.x > (game.grid.width/game.grid.size - 1);
+	var greaterThanY = worm.position.y > (game.grid.height/game.grid.size - 1)
+
+	if(lessThanX || lessThanY || greaterThanx || greaterThanY) {
+		resetBoard();
+	}
+
+	drawWorm(game.context);
+	
+	if(game.dot.exists) {
+		drawDot(game.context);
+	} else {
+		makeRandomDot();
+	}
+
+
+	if(worm.direction != 'none' && collision()) {
+		resetBoard();
+	}
+
+	if(game.dot.x == worm.position.x && game.dot.y == worm.position.y) {
+		game.dot.exists = false;
+		worm.length += 1;
+		game.score += game.dot.value;
+	}
+	
+	if(game.score > game.highScore) {
+		setHighScore(game.score);
+	}
+
+	drawText(game.context);
+}
+
+function moveWorm() {
 	// For each of the four directions, follow this logic:
 	//	change the worm's coordinates
 	//	mark the worm as not having moved
@@ -211,13 +217,46 @@ function updateBoard() {
 			}
 		}
 	}
-	
-	
-	// If the worm's position lies outside of the board, reset the board
-	if(worm.position.x < 0 || worm.position.y < 0 || worm.position.x > (game.grid.width/game.grid.size - 1) || worm.position.y > (game.grid.height/game.grid.size - 1)) {
-		resetBoard();
+}
+
+function resetCanvas(canvas) {
+	game.canvas.height = game.canvas.height;
+	game.canvas.width = game.canvas.width;
+}
+
+function drawGrid(context) {
+	// Draw the smaller vertical lines
+	context.beginPath();
+	for(var x = game.grid.offsetX + game.grid.size + 0.5; x <= game.grid.offsetX + game.grid.width; x += game.grid.size) {
+		context.moveTo(x, game.grid.offsetY);
+		context.lineTo(x, game.grid.height + game.grid.offsetY);
 	}
 	
+	// Draw the smaller horizontal lines
+	for(var y = game.grid.offsetY + game.grid.size + 0.5; y <= game.grid.offsetY + game.grid.height; y += game.grid.size) {
+		context.moveTo(game.grid.offsetX, y);
+		context.lineTo(game.grid.width + game.grid.offsetX, y);
+	}
+	
+	context.closePath();
+	context.lineWidth = GRID_INNER_WIDTH;
+	context.strokeStyle = GRID_INNER_COLOR;
+	context.stroke();
+	
+	// Draw the outer boundry of the board
+	context.beginPath();
+	context.moveTo(game.grid.offsetX, game.grid.offsetY);
+	context.lineTo(game.grid.offsetX, game.grid.offsetY + game.grid.height);
+	context.lineTo(game.grid.offsetX + game.grid.width, game.grid.offsetY + game.grid.height)
+	context.lineTo(game.grid.offsetX + game.grid.width, game.grid.offsetY);
+	context.lineTo(game.grid.offsetX, game.grid.offsetY);
+	context.strokeStyle = GRID_OUTER_COLOR;
+	context.lineWidth = GRID_OUTER_WIDTH;
+	context.closePath();
+	context.stroke();
+}
+
+function drawWorm(context) {
 	// Draw the head-end dot of the worm (always visible)
 	context.fillStyle = '#000';
 	context.fillRect(game.grid.offsetX + worm.position.x * game.grid.size + .5, game.grid.offsetY + worm.position.y * game.grid.size + .5, game.grid.size, game.grid.size);
@@ -236,55 +275,38 @@ function updateBoard() {
 			context.fillRect(game.grid.offsetX + worm.previousCells[worm.previousCells.length-n].x * game.grid.size + .5, game.grid.offsetY + worm.previousCells[worm.previousCells.length-n].y * game.grid.size + .5, game.grid.size, game.grid.size);
 		}
 	}
+}
+
+function drawDot(context) {
+	// Strip the red, green, and blue values from the dot's color
+	var red = parseInt(game.dot.color.substr(0, 2), 16);
+	var green = parseInt(game.dot.color.substr(2, 2), 16);
+	var blue = parseInt(game.dot.color.substr(4, 2), 16);
 	
-	// If a dot exists on the board
-	if(game.dot.alive) {
-		// Strip the red, green, and blue values from the dot's color
-		var red = parseInt(game.dot.color.substr(0, 2), 16);
-		var green = parseInt(game.dot.color.substr(2, 2), 16);
-		var blue = parseInt(game.dot.color.substr(4, 2), 16);
-		
-		// Fill in the dot on the grid with a transparency based off of the dot's current value and
-		//	the amount of time it has left in the stage. Should give a clean fading animation to the dot.
-		context.fillStyle = 'rgba(' + red + ', ' + green + ', ' + blue + ', ' + (game.dot.value + game.dot.timeToLiveThisStage/game.dot.timePerStage)/(game.dot.maxValue + 1) + ')';		
-		context.fillRect(game.grid.offsetX + game.dot.x * game.grid.size + .5, game.grid.offsetY + game.dot.y * game.grid.size + .5, game.grid.size, game.grid.size);
-		
-		// If game.dot.timeToLiveThisStage is positive, subtract the amount of time taken from the current frame
-		if(game.dot.timeToLiveThisStage > 0) {
-			game.dot.timeToLiveThisStage -= game.speed;
-		}
-		
-		// If the dot value isn't at the minimum and timeToLiveThisStage has hit zero
-		if(game.dot.value > game.dot.minValue && (game.dot.timeToLiveThisStage <= 0)) {
-			game.dot.value -= 1;
-			game.dot.timeToLiveThisStage = game.dot.timePerStage;
-		}
-	} else {
-		// If not dot exists, create one
-		makeRandomDot();
+	// Fill in the dot on the grid with a transparency based off of the dot's current value and
+	//	the amount of time it has left in the stage. Should give a clean fading animation to the dot.
+	context.fillStyle = 'rgba(' + red + ', ' + green + ', ' + blue + ', ' + (game.dot.value + game.dot.timeToLiveThisStage/game.dot.timePerStage)/(game.dot.maxValue + 1) + ')';		
+	context.fillRect(game.grid.offsetX + game.dot.x * game.grid.size + .5, game.grid.offsetY + game.dot.y * game.grid.size + .5, game.grid.size, game.grid.size);
+	
+	// If game.dot.timeToLiveThisStage is positive, subtract the amount of time taken from the current frame
+	if(game.dot.timeToLiveThisStage > 0) {
+		game.dot.timeToLiveThisStage -= game.speed;
 	}
 	
+	// If the dot value isn't at the minimum and timeToLiveThisStage has hit zero
+	if(game.dot.value > game.dot.minValue && (game.dot.timeToLiveThisStage <= 0)) {
+		game.dot.value -= 1;
+		game.dot.timeToLiveThisStage = game.dot.timePerStage;
+	}
+}
+
+function drawText(context) {
 	if(worm.direction != 'none') {
-		if(collision()) {
-			resetBoard();
-		}
-		
 		context.fillStyle = '#000';
 		context.font = "20px Georgia";
 		context.textAlign = "right"
 		context.fillText("dot score: " + game.dot.value, 410, 440);
 	}
-	
-	if(game.dot.x == worm.position.x && game.dot.y == worm.position.y) {
-		game.dot.alive = false;
-		worm.length += 1;
-		game.score += game.dot.value;
-	}
-	
-	if(game.score > game.highScore) {
-		setHighScore(game.score);
-	}
-	
 	
 	context.textAlign = "left"
 	context.fillStyle = '#000';
@@ -330,7 +352,7 @@ function collision() {
 // Set the board back to default - handle all lives/game over logic elsewhere. Sets the initial position to be random
 function resetBoard() {
 	game.score = 0;
-	game.dot.alive = false;
+	game.dot.exists = false;
 
 	worm.direction = "none";
 	worm.previousCells = new Array();
@@ -378,7 +400,7 @@ function makeRandomDot() {
 		game.dot.color = DOT_COLORS[Math.floor(DOT_COLORS.length*Math.random())];
 		game.dot.timeToLiveThisStage = game.dot.timePerStage;
 		game.dot.value = game.dot.maxValue;
-		game.dot.alive = true;
+		game.dot.exists = true;
 	}
 }
 
