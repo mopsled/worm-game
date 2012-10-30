@@ -1,97 +1,102 @@
+var game = new Object;
 var worm = new Object;
+
+var LOCAL_STORAGE_VERSION = 'version';
+var LOCAL_STORAGE_HIGH_SCORE = 'highScore';
 			
 // Initialize all worm properties and event listeners
 function init() {
-
-	// worm properties: worm.
+	// game properties:
 	//	.canvas - the canvas that the worm will be drawn to
 	//	.context - a 2d context in which to draw the worm game
-	//	.direction - a variable that holds the direction the worm is currently moving in:
-	//		'none' - for not moving
-	//		and 'left', 'right', 'up', and 'down' for any move in those directions
-	//	.cellsBefore - an array of objects (cellsBefore[index].x and cellsBefore[index].y) holding
-	//		the most recent places that the worm has been, with up to worm.maxSize places
-	//	.length - the current length of the worm
 	//	.speed - the number of milliseconds for each frame. Lower value = faster fame
-	//	.movedThisTurn - holds true value if a move has been entered this turn
-	// 	.cachedMove - holds 'left', 'right', 'up', or 'down' if a move has been been cached from
-	//		this frame for the next frame. Used for storing a single move if the user enters
-	//		moves faster than the grid updates
 	//	.paused - holds true value if the game is paused. A paused game will not update the grid
-	//	.score - the point value that the worm is currently at (used for 'score:')
-	//	.maxSize - the maximum length of a worm on board, and the worm.cellsBefore array
+	//	.score - the point value that the game is currently at (used for 'score:')
 	//	.version - the current version of the game. This is used to erase high scores that belong to
 	//		an earlier version of the game
 	//	.highScore - the maximum score acheived. This is stored in localStorage, if possible
 	//	.updateBoardIntervalId - the interval id of the updateBoard()'s setInterval. This is
 	//		used to stop and start the repeated updating of the board if the game is paused
 	//		and restarted
+	//	.grid - Holds the size and shape properties of the grid (more below)
+	//	.dot - Holds dot properies, such as point value and location (more below)
+
+	// worm properties:
+	//	.direction - a variable that holds the direction the worm is currently moving in:
+	//		'none' - for not moving
+	//		and 'left', 'right', 'up', and 'down' for any move in those directions
+	//	.cellsBefore - an array of objects (cellsBefore[index].x and cellsBefore[index].y) holding
+	//		the most recent places that the worm has been, with up to worm.maxSize places
+	//	.length - the current length of the worm
+	//	.movedThisTurn - holds true value if a move has been entered this turn
+	// 	.cachedMove - holds 'left', 'right', 'up', or 'down' if a move has been been cached from
+	//		this frame for the next frame. Used for storing a single move if the user enters
+	//		moves faster than the grid updates
+	//	.maxSize - the maximum length of a worm on board, and the worm.cellsBefore array
+	//	.position - X & Y coordinates for worm position
 	
-	worm.canvas = document.getElementById('wormGame');
-	worm.canvas.width = 420;
-	worm.canvas.height = 500;
-	worm.context = worm.canvas.getContext('2d');
+	game.canvas = document.getElementById('game');
+	game.canvas.width = 420;
+	game.canvas.height = 500;
+	game.context = worm.canvas.getContext('2d');
+	game.speed = 70;
+	game.paused = false;
+	game.score = 0;
+	game.version = 1;
+
 	worm.direction = 'none';
 	worm.cellsBefore = new Array();
 	worm.length = 1;
-	worm.speed = 70;
 	worm.movedThisTurn = false;
 	worm.cachedMove = 'none';
-	worm.paused = false;
-	worm.score = 0;
 	worm.maxSize = 100;
-	worm.version = 2;
 	
 	// If the user supports local storage and has a lower version, reset his high score
 	if(supportsLocalStorage()) {
-		if(!localStorage['worm.version'] || localStorage['worm.version'] < worm.version) {
-			localStorage['worm.highScore'] = 0;
-			localStorage['worm.version'] = worm.version
+		if(localStorage[LOCAL_STORAGE_VERSION] < worm.version) {
+			localStorage[LOCAL_STORAGE_HIGH_SCORE] = 0;
+			localStorage[LOCAL_STORAGE_VERSION] = worm.version
 		}
 	}
 	
 	// If local storage exists and a high score exists in it, restore that high score
-	if(supportsLocalStorage() && localStorage['worm.highScore']) {
-		worm.highScore = localStorage['worm.highScore'];
+	if(supportsLocalStorage() && localStorage[LOCAL_STORAGE_HIGH_SCORE]) {
+		game.highScore = localStorage[LOCAL_STORAGE_HIGH_SCORE];
 	} else {
-		worm.highScore = 0;
+		game.highScore = 0;
 	}
 	
-	// Grid properties: worm.grid
-	//	.size - the size, in pixels, of a side of a square in the grid
-	//	.width - the total width of the grid. should be a multiple of the size
-	//	.height - the total height of the grid. should be a multiple of the size
-	//	.offsetX - the offset of the grid in the X direction on the canvas
-	//	.offsetY - the offset of the grid in the Y direction on the canvas
-	worm.grid = new Object;
-	worm.grid.size = 20;
-	worm.grid.width = 400;
-	worm.grid.height = 400;
-	worm.grid.offsetX = 10;
-	worm.grid.offsetY = 10;
+	// Grid properties: game.grid
+	//	.size - In pixels, size of a side of a square in the grid
+	//	.width, .height - In pixels, should be a multiple of the size
+	//	.offsetX, .offsetY - the offset of the grid in the X and Y direction on the canvas
+	game.grid = new Object;
+	game.grid.size = 20;
+	game.grid.width = 400;
+	game.grid.height = 400;
+	game.grid.offsetX = 10;
+	game.grid.offsetY = 10;
 	
-	// Dot properties: worm.dot
+	// Dot properties: game.dot
 	//	.timePerStage - the amount of time (in milliseconds) that a dot stays a point value
-	//	.maxValue - the higher bound of point value for a dot
-	//	.minValue - the lower bound of point value for a dot
-	// 	.alive - a boolean variable specifying false and true for dead and alive
+	//	.minValue, .maxValue - the lower and upper bounds of point value for a dot
+	// 	.exists - a boolean variable specifying dot existance
 	//	.x - the x position (in grid value, not pixel value) of the worm
 	//	.y - the y position (in grid value, not pixel value) of the worm
 	//	.color - a hexidecimal string (e.g. '123456') that holds the dot's color
 	//	.timeToLiveThisStage - the number of milliseconds left in the current stage
 	//	.value - the current value of the dot on the board (between .minValue and .maxValue)
-	worm.dot = new Object;
-	worm.dot.timePerStage = 250;
-	worm.dot.maxValue = 16;
-	worm.dot.minValue = 6;
-	worm.dot.alive = false;
+	game.dot = new Object;
+	game.dot.timePerStage = 250;
+	game.dot.minValue = 6;
+	game.dot.maxValue = 16;
+	game.dot.exists = false;
 	
 	// Position properties: worm.pos
-	//	.x - the current x position (in grid value, not pixel value) of the worm
-	//	.y - the current y position (in grid value, not pixel value) of the worm
-	worm.pos = new Object;
-	worm.pos.x = Math.floor(Math.random()*(worm.grid.width/worm.grid.size + 1));
-	worm.pos.y = Math.floor(Math.random()*(worm.grid.height/worm.grid.size + 1));
+	//	.x, .y - the current x and y position (in grid value, not pixel value) of the worm
+	worm.position = new Object;
+	worm.position.x = Math.floor(Math.random()*(worm.grid.width/worm.grid.size + 1));
+	worm.position.y = Math.floor(Math.random()*(worm.grid.height/worm.grid.size + 1));
 	
 	// Make the game respond to key events if the mouse is currently hovering over the canvas
 	worm.canvas.addEventListener('mouseover', 
