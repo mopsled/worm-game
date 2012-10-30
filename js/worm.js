@@ -3,6 +3,7 @@ var worm = new Object;
 
 var LOCAL_STORAGE_VERSION = 'version';
 var LOCAL_STORAGE_HIGH_SCORE = 'highScore';
+var DOT_COLORS = Array('88A825', '35203B', '911146', 'CF4A39', 'ED8C2B', '4BB5C1', '345BC1');
 			
 // Initialize all worm properties and event listeners
 function init() {
@@ -12,8 +13,7 @@ function init() {
 	//	.speed - the number of milliseconds for each frame. Lower value = faster fame
 	//	.paused - holds true value if the game is paused. A paused game will not update the grid
 	//	.score - the point value that the game is currently at (used for 'score:')
-	//	.version - the current version of the game. This is used to erase high scores that belong to
-	//		an earlier version of the game
+	//	.score - the max point value for the gam ever
 	//	.highScore - the maximum score acheived. This is stored in localStorage, if possible
 	//	.updateBoardIntervalId - the interval id of the updateBoard()'s setInterval. This is
 	//		used to stop and start the repeated updating of the board if the game is paused
@@ -25,46 +25,33 @@ function init() {
 	//	.direction - a variable that holds the direction the worm is currently moving in:
 	//		'none' - for not moving
 	//		and 'left', 'right', 'up', and 'down' for any move in those directions
-	//	.cellsBefore - an array of objects (cellsBefore[index].x and cellsBefore[index].y) holding
+	//	.previousCells - an array of objects (previousCells[index].x and previousCells[index].y) holding
 	//		the most recent places that the worm has been, with up to worm.maxSize places
 	//	.length - the current length of the worm
 	//	.movedThisTurn - holds true value if a move has been entered this turn
 	// 	.cachedMove - holds 'left', 'right', 'up', or 'down' if a move has been been cached from
 	//		this frame for the next frame. Used for storing a single move if the user enters
 	//		moves faster than the grid updates
-	//	.maxSize - the maximum length of a worm on board, and the worm.cellsBefore array
+	//	.maxSize - the maximum length of a worm on board, and the worm.previousCells array
 	//	.position - X & Y coordinates for worm position
 	
 	game.canvas = document.getElementById('game');
 	game.canvas.width = 420;
 	game.canvas.height = 500;
-	game.context = worm.canvas.getContext('2d');
+	game.context = game.canvas.getContext('2d');
 	game.speed = 70;
 	game.paused = false;
 	game.score = 0;
-	game.version = 1;
+	game.highScore = retrieveHighScore();
 
 	worm.direction = 'none';
-	worm.cellsBefore = new Array();
+	worm.previousCells = new Array();
 	worm.length = 1;
 	worm.movedThisTurn = false;
 	worm.cachedMove = 'none';
 	worm.maxSize = 100;
 	
-	// If the user supports local storage and has a lower version, reset his high score
-	if(supportsLocalStorage()) {
-		if(localStorage[LOCAL_STORAGE_VERSION] < worm.version) {
-			localStorage[LOCAL_STORAGE_HIGH_SCORE] = 0;
-			localStorage[LOCAL_STORAGE_VERSION] = worm.version
-		}
-	}
 	
-	// If local storage exists and a high score exists in it, restore that high score
-	if(supportsLocalStorage() && localStorage[LOCAL_STORAGE_HIGH_SCORE]) {
-		game.highScore = localStorage[LOCAL_STORAGE_HIGH_SCORE];
-	} else {
-		game.highScore = 0;
-	}
 	
 	// Grid properties: game.grid
 	//	.size - In pixels, size of a side of a square in the grid
@@ -92,74 +79,66 @@ function init() {
 	game.dot.maxValue = 16;
 	game.dot.exists = false;
 	
-	// Position properties: worm.pos
+	// Position properties: worm.position
 	//	.x, .y - the current x and y position (in grid value, not pixel value) of the worm
 	worm.position = new Object;
-	worm.position.x = Math.floor(Math.random()*(worm.grid.width/worm.grid.size + 1));
-	worm.position.y = Math.floor(Math.random()*(worm.grid.height/worm.grid.size + 1));
+	worm.position.x = Math.floor(Math.random()*(game.grid.width/game.grid.size + 1));
+	worm.position.y = Math.floor(Math.random()*(game.grid.height/game.grid.size + 1));
 	
-	// Make the game respond to key events if the mouse is currently hovering over the canvas
-	worm.canvas.addEventListener('mouseover', 
-		function() {
-			window.addEventListener('keydown', wormKeyHit, false);
-		}, 
-	false);
+	// Add key event listener
+	window.addEventListener('keydown', wormKeyHit, false);
 	
-	worm.canvas.addEventListener('mouseout', 
-		function() {
-			window.removeEventListener('keydown', wormKeyHit, false);
-		}, 
-	false);
-	
-	worm.updateBoardIntervalId = setInterval('updateBoard()', worm.speed);
+	worm.updateBoardIntervalId = setInterval('updateBoard()', game.speed);
 }
 
 // Redraw the board
 function updateBoard() {
+	var context = game.context;
+
 	// Reset the board
-	worm.canvas.height = worm.canvas.height;
-	worm.canvas.width = worm.canvas.width;
+	game.canvas.height = game.canvas.height;
+	game.canvas.width = game.canvas.width;
 	
 	// Draw the smaller vertical lines
-	worm.context.beginPath();
-	for(var x = worm.grid.offsetX + worm.grid.size + 0.5; x <= worm.grid.offsetX + worm.grid.width; x += worm.grid.size) {
-		worm.context.moveTo(x, worm.grid.offsetY);
-		worm.context.lineTo(x, worm.grid.height + worm.grid.offsetY);
+	context.beginPath();
+	for(var x = game.grid.offsetX + game.grid.size + 0.5; x <= game.grid.offsetX + game.grid.width; x += game.grid.size) {
+		context.moveTo(x, game.grid.offsetY);
+		context.lineTo(x, game.grid.height + game.grid.offsetY);
 	}
 	
 	// Draw the smaller horizontal lines
-	for(var y = worm.grid.offsetY + worm.grid.size + 0.5; y <= worm.grid.offsetY + worm.grid.height; y += worm.grid.size) {
-		worm.context.moveTo(worm.grid.offsetX, y);
-		worm.context.lineTo(worm.grid.width + worm.grid.offsetX, y);
+	for(var y = game.grid.offsetY + game.grid.size + 0.5; y <= game.grid.offsetY + game.grid.height; y += game.grid.size) {
+		context.moveTo(game.grid.offsetX, y);
+		context.lineTo(game.grid.width + game.grid.offsetX, y);
 	}
 	
-	worm.context.closePath();
-	worm.context.lineWidth = '1.0';
-	worm.context.strokeStyle = "#ccc";
-	worm.context.stroke();
+	context.closePath();
+	context.lineWidth = '1.0';
+	context.strokeStyle = "#ccc";
+	context.stroke();
 	
 	// Draw the outer boundry of the board
-	worm.context.beginPath();
-	worm.context.moveTo(worm.grid.offsetX, worm.grid.offsetY);
-	worm.context.lineTo(worm.grid.offsetX, worm.grid.offsetY + worm.grid.height);
-	worm.context.lineTo(worm.grid.offsetX + worm.grid.width, worm.grid.offsetY + worm.grid.height)
-	worm.context.lineTo(worm.grid.offsetX + worm.grid.width, worm.grid.offsetY);
-	worm.context.lineTo(worm.grid.offsetX, worm.grid.offsetY);
-	worm.context.strokeStyle = "#000";
-	worm.context.lineWidth = '2.0';
-	worm.context.closePath();
-	worm.context.stroke();
+	context.beginPath();
+	context.moveTo(game.grid.offsetX, game.grid.offsetY);
+	context.lineTo(game.grid.offsetX, game.grid.offsetY + game.grid.height);
+	context.lineTo(game.grid.offsetX + game.grid.width, game.grid.offsetY + game.grid.height)
+	context.lineTo(game.grid.offsetX + game.grid.width, game.grid.offsetY);
+	context.lineTo(game.grid.offsetX, game.grid.offsetY);
+	context.strokeStyle = "#000";
+	context.lineWidth = '2.0';
+	context.closePath();
+	context.stroke();
 	
-	// If the worm is currently playing, add its current position to cellsBefore
+	// If the worm is currently playing, add its current position to previousCells
 	if(worm.direction != 'none') {
 		position = new Object;
-		position.x = worm.pos.x;
-		position.y = worm.pos.y;
-		worm.cellsBefore.push(position);
+		position.x = worm.position.x;
+		position.y = worm.position.y;
+		worm.previousCells.push(position);
 		
-		// Keep cellsBefore.length to a maximum size of worm.maxSize
-		if(worm.cellsBefore.length > worm.maxSize) {
-			worm.cellsBefore.shift();
+		// Keep previousCells.length to a maximum size of worm.maxSize
+		if(worm.previousCells.length > worm.maxSize) {
+			worm.previousCells.shift();
 		}
 	}
 	
@@ -172,7 +151,7 @@ function updateBoard() {
 	//		otherwise:
 	//			remove cached move
 	if(worm.direction == 'left') {
-		worm.pos.x = worm.pos.x - 1;
+		worm.position.x = worm.position.x - 1;
 		worm.movedThisTurn = false;
 		
 		if(worm.cachedMove != 'none') {
@@ -186,7 +165,7 @@ function updateBoard() {
 		}
 		
 	} else if(worm.direction == 'right') {
-		worm.pos.x = worm.pos.x + 1;
+		worm.position.x = worm.position.x + 1;
 		worm.movedThisTurn = false;
 		
 		if(worm.cachedMove != 'none') {
@@ -200,7 +179,7 @@ function updateBoard() {
 		}
 		
 	} else if(worm.direction == 'up') {
-		worm.pos.y = worm.pos.y - 1;
+		worm.position.y = worm.position.y - 1;
 		worm.movedThisTurn = false;
 		
 		if(worm.cachedMove != 'none') {
@@ -214,7 +193,7 @@ function updateBoard() {
 		}
 		
 	} else if(worm.direction == 'down') {
-		worm.pos.y = worm.pos.y + 1;
+		worm.position.y = worm.position.y + 1;
 		worm.movedThisTurn = false;
 		
 		if(worm.cachedMove != 'none') {
@@ -230,48 +209,50 @@ function updateBoard() {
 	
 	
 	// If the worm's position lies outside of the board, reset the board
-	if(worm.pos.x < 0 || worm.pos.y < 0 || worm.pos.x > (worm.grid.width/worm.grid.size - 1) || worm.pos.y > (worm.grid.height/worm.grid.size - 1)) {
+	if(worm.position.x < 0 || worm.position.y < 0 || worm.position.x > (game.grid.width/game.grid.size - 1) || worm.position.y > (game.grid.height/game.grid.size - 1)) {
 		resetBoard();
 	}
 	
 	// Draw the head-end dot of the worm (always visible)
-	worm.context.fillStyle = '#000';
-	worm.context.fillRect(worm.grid.offsetX + worm.pos.x * worm.grid.size + .5, worm.grid.offsetY + worm.pos.y * worm.grid.size + .5, worm.grid.size, worm.grid.size);
+	context.fillStyle = '#000';
+	context.fillRect(game.grid.offsetX + worm.position.x * game.grid.size + .5, game.grid.offsetY + worm.position.y * game.grid.size + .5, game.grid.size, game.grid.size);
 	
 	// If the worm is longer than one block
 	if(worm.length > 1) {
 		// If the worm's length is greater than the maximum size, trim it back down to the maximum size
-		if(worm.length > worm.maxSize){worm.length = worm.maxSize;}
+		if(worm.length > worm.maxSize){
+			worm.length = worm.maxSize;
+		}
 		
 		// For each of the rest of the blocks in the worm's tail
 		for(var n = worm.length - 1; n != 0; n--) {
 			// Do some math magic to create a gradient for the tail
-			worm.context.fillStyle = 'rgb(' + Math.floor(0xbb/worm.length * n) + ', ' + Math.floor(0xbb/worm.length * n) + ', ' + Math.floor(0xbb/worm.length * n) + ')';
-			worm.context.fillRect(worm.grid.offsetX + worm.cellsBefore[worm.cellsBefore.length-n].x * worm.grid.size + .5, worm.grid.offsetY + worm.cellsBefore[worm.cellsBefore.length-n].y * worm.grid.size + .5, worm.grid.size, worm.grid.size);
+			context.fillStyle = 'rgb(' + Math.floor(0xbb/worm.length * n) + ', ' + Math.floor(0xbb/worm.length * n) + ', ' + Math.floor(0xbb/worm.length * n) + ')';
+			context.fillRect(game.grid.offsetX + worm.previousCells[worm.previousCells.length-n].x * game.grid.size + .5, game.grid.offsetY + worm.previousCells[worm.previousCells.length-n].y * game.grid.size + .5, game.grid.size, game.grid.size);
 		}
 	}
 	
 	// If a dot exists on the board
-	if(worm.dot.alive) {
+	if(game.dot.alive) {
 		// Strip the red, green, and blue values from the dot's color
-		var red = parseInt(worm.dot.color.substr(0, 2), 16);
-		var green = parseInt(worm.dot.color.substr(2, 2), 16);
-		var blue = parseInt(worm.dot.color.substr(4, 2), 16);
+		var red = parseInt(game.dot.color.substr(0, 2), 16);
+		var green = parseInt(game.dot.color.substr(2, 2), 16);
+		var blue = parseInt(game.dot.color.substr(4, 2), 16);
 		
 		// Fill in the dot on the grid with a transparency based off of the dot's current value and
 		//	the amount of time it has left in the stage. Should give a clean fading animation to the dot.
-		worm.context.fillStyle = 'rgba(' + red + ', ' + green + ', ' + blue + ', ' + (worm.dot.value + worm.dot.timeToLiveThisStage/worm.dot.timePerStage)/(worm.dot.maxValue + 1) + ')';		
-		worm.context.fillRect(worm.grid.offsetX + worm.dot.x * worm.grid.size + .5, worm.grid.offsetY + worm.dot.y * worm.grid.size + .5, worm.grid.size, worm.grid.size);
+		context.fillStyle = 'rgba(' + red + ', ' + green + ', ' + blue + ', ' + (game.dot.value + game.dot.timeToLiveThisStage/game.dot.timePerStage)/(game.dot.maxValue + 1) + ')';		
+		context.fillRect(game.grid.offsetX + game.dot.x * game.grid.size + .5, game.grid.offsetY + game.dot.y * game.grid.size + .5, game.grid.size, game.grid.size);
 		
-		// If worm.dot.timeToLiveThisStage is positive, subtract the amount of time taken from the current frame
-		if(worm.dot.timeToLiveThisStage > 0) {
-			worm.dot.timeToLiveThisStage -= worm.speed;
+		// If game.dot.timeToLiveThisStage is positive, subtract the amount of time taken from the current frame
+		if(game.dot.timeToLiveThisStage > 0) {
+			game.dot.timeToLiveThisStage -= game.speed;
 		}
 		
 		// If the dot value isn't at the minimum and timeToLiveThisStage has hit zero
-		if(worm.dot.value > worm.dot.minValue && (worm.dot.timeToLiveThisStage <= 0)) {
-			worm.dot.value -= 1;
-			worm.dot.timeToLiveThisStage = worm.dot.timePerStage;
+		if(game.dot.value > game.dot.minValue && (game.dot.timeToLiveThisStage <= 0)) {
+			game.dot.value -= 1;
+			game.dot.timeToLiveThisStage = game.dot.timePerStage;
 		}
 	} else {
 		// If not dot exists, create one
@@ -283,44 +264,57 @@ function updateBoard() {
 			resetBoard();
 		}
 		
-		worm.context.fillStyle = '#000';
-		worm.context.font = "20px Georgia";
-		worm.context.textAlign = "right"
-		worm.context.fillText("dot score: " + worm.dot.value, 410, 440);
+		context.fillStyle = '#000';
+		context.font = "20px Georgia";
+		context.textAlign = "right"
+		context.fillText("dot score: " + game.dot.value, 410, 440);
 	}
 	
-	if(worm.dot.x == worm.pos.x && worm.dot.y == worm.pos.y) {
-		worm.dot.alive = false;
+	if(game.dot.x == worm.position.x && game.dot.y == worm.position.y) {
+		game.dot.alive = false;
 		worm.length += 1;
-		worm.score += worm.dot.value;
+		game.score += game.dot.value;
 	}
 	
-	if(worm.score > worm.highScore) {
-		worm.highScore = worm.score;
-		if(supportsLocalStorage()) {
-			localStorage['worm.highScore'] = worm.highScore;
-		}
+	if(game.score > game.highScore) {
+		setHighScore(game.score);
 	}
 	
 	
-	worm.context.textAlign = "left"
-	worm.context.fillStyle = '#000';
-	worm.context.font = "20px Georgia";
-	worm.context.fillText("score: " + worm.score, 10, 440);
+	context.textAlign = "left"
+	context.fillStyle = '#000';
+	context.font = "20px Georgia";
+	context.fillText("score: " + game.score, 10, 440);
 	
-	if(worm.highScore != 0) {
-		worm.context.textAlign = "center"
-		worm.context.fillStyle = '#000';
-		worm.context.font = "20px Georgia";
-		worm.context.fillText("high score: " + worm.highScore, 200, 465);
+	if(game.highScore != 0) {
+		context.textAlign = "center"
+		context.fillStyle = '#000';
+		context.font = "20px Georgia";
+		context.fillText("high score: " + game.highScore, 200, 465);
+	}
+}
+
+function setHighScore(score) {
+	game.highScore = score;
+
+	if(supportsLocalStorage()) {
+		localStorage.setItem(LOCAL_STORAGE_HIGH_SCORE, score)
+	}
+}
+
+function retrieveHighScore(score) {
+	if(supportsLocalStorage() && localStorage.getItem(LOCAL_STORAGE_HIGH_SCORE)) {
+		return localStorage.getItem(LOCAL_STORAGE_HIGH_SCORE);
+	} else {
+		return 0;
 	}
 }
 
 // Returns true if the worm has collided with itself
 function collision() {
 	for(var n = 0; n != worm.length - 1; n++) {
-		if(worm.pos.x == worm.cellsBefore[worm.cellsBefore.length - n - 1].x &&
-			worm.pos.y == worm.cellsBefore[worm.cellsBefore.length - n - 1].y) {
+		if(worm.position.x == worm.previousCells[worm.previousCells.length - n - 1].x &&
+			worm.position.y == worm.previousCells[worm.previousCells.length - n - 1].y) {
 			return true;
 		}
 	}
@@ -330,56 +324,56 @@ function collision() {
 
 // Set the board back to default - handle all lives/game over logic elsewhere. Sets the initial position to be random
 function resetBoard() {
+	game.score = 0;
+	game.dot.alive = false;
+
 	worm.direction = "none";
-	worm.cellsBefore = new Array();
+	worm.previousCells = new Array();
 	worm.length = 1;
 	worm.movedThisTurn = false;
 	worm.cachedMove = 'none';
-	worm.score = 0;
-	worm.dot.alive = false;
 	
-	worm.pos.x = 1 + Math.floor(Math.random()*(worm.grid.width/worm.grid.size - 2));
-	worm.pos.y = 1 + Math.floor(Math.random()*(worm.grid.height/worm.grid.size - 2));	
+	worm.position.x = 1 + Math.floor(Math.random()*(game.grid.width/game.grid.size - 2));
+	worm.position.y = 1 + Math.floor(Math.random()*(game.grid.height/game.grid.size - 2));	
 }
 
 function makeRandomDot() {
 	if(worm.direction != 'none') {
 		var position = {
-			x: Math.floor(Math.random() * worm.grid.width/worm.grid.size),
-			y: Math.floor(Math.random() * worm.grid.height/worm.grid.size)
+			x: Math.floor(Math.random() * game.grid.width/game.grid.size),
+			y: Math.floor(Math.random() * game.grid.height/game.grid.size)
 		};
 		
 		var inThere = false;
 		for(var n = 0; n != worm.length - 1; n++) {
-			if(position.x == worm.cellsBefore[worm.cellsBefore.length - n - 1].x &&
-				position.y == worm.cellsBefore[worm.cellsBefore.length - n - 1].y) {
+			if(position.x == worm.previousCells[worm.previousCells.length - n - 1].x &&
+				position.y == worm.previousCells[worm.previousCells.length - n - 1].y) {
 				inThere = true;
 			}
 		}
 		
 		while(inThere) {
 			position = {
-				x: Math.floor(Math.random() * worm.grid.width/worm.grid.size),
-				y: Math.floor(Math.random() * worm.grid.height/worm.grid.size)
+				x: Math.floor(Math.random() * game.grid.width/game.grid.size),
+				y: Math.floor(Math.random() * game.grid.height/game.grid.size)
 			};
 			
 			inThere = false;
 			for(var n = 0; n != worm.length - 1; n++) {
-				if(position.x == worm.cellsBefore[worm.cellsBefore.length - n - 1].x &&
-					position.y == worm.cellsBefore[worm.cellsBefore.length - n - 1].y) {
+				if(position.x == worm.previousCells[worm.previousCells.length - n - 1].x &&
+					position.y == worm.previousCells[worm.previousCells.length - n - 1].y) {
 					inThere = true;
 				}
 			}
 		}
 		
-		worm.dot.x = position.x;
-		worm.dot.y = position.y;
-		// colors taken from http://bit.ly/g50AA0
-		var prettyColors = Array('88A825', '35203B', '911146', 'CF4A39', 'ED8C2B', '4BB5C1', '345BC1');
-		worm.dot.color = prettyColors[Math.floor(prettyColors.length*Math.random())];
-		worm.dot.timeToLiveThisStage = worm.dot.timePerStage;
-		worm.dot.value = worm.dot.maxValue;
-		worm.dot.alive = true;
+		game.dot.x = position.x;
+		game.dot.y = position.y;
+
+		game.dot.color = DOT_COLORS[Math.floor(DOT_COLORS.length*Math.random())];
+		game.dot.timeToLiveThisStage = game.dot.timePerStage;
+		game.dot.value = game.dot.maxValue;
+		game.dot.alive = true;
 	}
 }
 
@@ -443,7 +437,7 @@ function wormKeyHit(e) {
 		// 'p' key
 		case 80:
 			if(worm.paused) {
-				worm.updateBoardIntervalId = setInterval('updateBoard()', worm.speed);
+				worm.updateBoardIntervalId = setInterval('updateBoard()', game.speed);
 			} else {
 				clearInterval(worm.updateBoardIntervalId);
 			}
@@ -452,22 +446,13 @@ function wormKeyHit(e) {
 			
 			break;
 			
-		// 'r' key
-		case 82:
-			if(supportsLocalStorage()) {
-				localStorage['worm.highScore'] = 0;
-			}
-			
-			worm.highScore = 0;
+		// '\' key
+		case 220:
+			setHighScore(0);
 			resetBoard();
 	}
 	
 	return false;
-}
-
-// Adds a .mod(x) function to numbers that handles negative numbers correctly
-Number.prototype.mod = function(n) {
-	return ((this%n)+n)%n;
 }
 
 // Returns true if localStorage is present in the browser (source: http://bit.ly/cOSABP)			
@@ -477,6 +462,11 @@ function supportsLocalStorage() {
 	} catch (e) { 
 		return false; 
 	}
+}
+
+// Adds a .mod(x) function to numbers that handles negative numbers correctly
+Number.prototype.mod = function(n) {
+	return ((this%n)+n)%n;
 }
 
 // When the page loads, launch the init() function
