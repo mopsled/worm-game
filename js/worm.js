@@ -3,6 +3,11 @@ var worm = new Object;
 
 var LOCAL_STORAGE_VERSION = 'version';
 var LOCAL_STORAGE_HIGH_SCORE = 'highScore';
+
+var GRID_INNER_WIDTH = '1.0';
+var GRID_INNER_COLOR = '#ccc';
+var GRID_OUTER_WIDTH = '2.0';
+var GRID_OUTER_COLOR = '#000';
 var DOT_COLORS = Array('88A825', '35203B', '911146', 'CF4A39', 'ED8C2B', '4BB5C1', '345BC1');
 			
 // Initialize all worm properties and event listeners
@@ -113,8 +118,8 @@ function updateBoard() {
 	}
 	
 	context.closePath();
-	context.lineWidth = '1.0';
-	context.strokeStyle = "#ccc";
+	context.lineWidth = GRID_INNER_WIDTH;
+	context.strokeStyle = GRID_INNER_COLOR;
 	context.stroke();
 	
 	// Draw the outer boundry of the board
@@ -124,8 +129,8 @@ function updateBoard() {
 	context.lineTo(game.grid.offsetX + game.grid.width, game.grid.offsetY + game.grid.height)
 	context.lineTo(game.grid.offsetX + game.grid.width, game.grid.offsetY);
 	context.lineTo(game.grid.offsetX, game.grid.offsetY);
-	context.strokeStyle = "#000";
-	context.lineWidth = '2.0';
+	context.strokeStyle = GRID_OUTER_COLOR;
+	context.lineWidth = GRID_OUTER_WIDTH;
 	context.closePath();
 	context.stroke();
 	
