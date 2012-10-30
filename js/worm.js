@@ -4,8 +4,6 @@ var worm = new Object;
 var LOCAL_STORAGE_VERSION = 'version';
 var LOCAL_STORAGE_HIGH_SCORE = 'highScore';
 
-var GRID_INNER_WIDTH = '1.0';
-var GRID_INNER_COLOR = '#ccc';
 var GRID_OUTER_WIDTH = '2.0';
 var GRID_OUTER_COLOR = '#000';
 var DOT_COLORS = Array('88A825', '35203B', '911146', 'CF4A39', 'ED8C2B', '4BB5C1', '345BC1');
@@ -225,24 +223,6 @@ function resetCanvas(canvas) {
 }
 
 function drawGrid(context) {
-	// Draw the smaller vertical lines
-	context.beginPath();
-	for(var x = game.grid.offsetX + game.grid.size + 0.5; x <= game.grid.offsetX + game.grid.width; x += game.grid.size) {
-		context.moveTo(x, game.grid.offsetY);
-		context.lineTo(x, game.grid.height + game.grid.offsetY);
-	}
-	
-	// Draw the smaller horizontal lines
-	for(var y = game.grid.offsetY + game.grid.size + 0.5; y <= game.grid.offsetY + game.grid.height; y += game.grid.size) {
-		context.moveTo(game.grid.offsetX, y);
-		context.lineTo(game.grid.width + game.grid.offsetX, y);
-	}
-	
-	context.closePath();
-	context.lineWidth = GRID_INNER_WIDTH;
-	context.strokeStyle = GRID_INNER_COLOR;
-	context.stroke();
-	
 	// Draw the outer boundry of the board
 	context.beginPath();
 	context.moveTo(game.grid.offsetX, game.grid.offsetY);
