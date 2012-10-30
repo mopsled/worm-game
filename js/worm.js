@@ -113,16 +113,6 @@ function updateBoard() {
 	}
 
 	moveWorm();
-	
-	// If the worm's position lies outside of the board, reset the board
-	var lessThanX = worm.position.x < 0;
-	var lessThanY = worm.position.y < 0;
-	var greaterThanx = worm.position.x > (game.grid.width/game.grid.size - 1);
-	var greaterThanY = worm.position.y > (game.grid.height/game.grid.size - 1)
-
-	if(lessThanX || lessThanY || greaterThanx || greaterThanY) {
-		resetBoard();
-	}
 
 	drawWorm(game.context);
 	
@@ -356,6 +346,16 @@ function collision() {
 			return true;
 		}
 	}
+
+	// If the worm's position lies outside of the board, reset the board
+	var lessThanX = worm.position.x < 0;
+	var lessThanY = worm.position.y < 0;
+	var greaterThanx = worm.position.x > (game.grid.width/game.grid.size - 1);
+	var greaterThanY = worm.position.y > (game.grid.height/game.grid.size - 1)
+
+	if(lessThanX || lessThanY || greaterThanx || greaterThanY) {
+		return true;
+	}
 	
 	return false;
 }
@@ -369,7 +369,7 @@ function resetBoard() {
 	worm.direction = "none";
 	worm.previousCells = new Array();
 	worm.length = 1;
-	worm.movedThisTurn = false;
+	worm.movedThisTurn = false; 
 	worm.cachedMove = 'none';
 	
 	worm.position.x = 1 + Math.floor(Math.random()*(game.grid.width/game.grid.size - 2));
