@@ -80,6 +80,8 @@ function init() {
 	game.dot.maxValue = 16;
 	game.dot.exists = false;
 	
+	game.dots = new Array();
+
 	// Position properties: worm.position
 	//	.x, .y - the current x and y position (in grid value, not pixel value) of the worm
 	worm.position = new Object;
@@ -362,7 +364,7 @@ function makeRandomDot() {
 	game.dot.x = position.x;
 	game.dot.y = position.y;
 
-	game.dot.color = DOT_COLORS[Math.floor(DOT_COLORS.length*Math.random())];
+	game.dot.color = DOT_COLORS[0];
 	game.dot.timeToLiveThisStage = game.dot.timePerStage;
 	game.dot.value = game.dot.maxValue;
 	game.dot.exists = true;
