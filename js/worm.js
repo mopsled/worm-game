@@ -41,8 +41,6 @@ function init() {
 	//	.position - X & Y coordinates for worm position
 	
 	game.canvas = document.getElementById('game');
-	game.canvas.width = 420;
-	game.canvas.height = 500;
 	game.context = game.canvas.getContext('2d');
 	game.speed = 70;
 	game.paused = false;
@@ -64,7 +62,7 @@ function init() {
 	//	.offsetX, .offsetY - the offset of the grid in the X and Y direction on the canvas
 	game.grid = new Object;
 	game.grid.size = 20;
-	game.grid.width = 400;
+	game.grid.width = 700;
 	game.grid.height = 400;
 	game.grid.offsetX = 10;
 	game.grid.offsetY = 10;
@@ -307,19 +305,19 @@ function drawText(context) {
 		context.fillStyle = '#000';
 		context.font = "20px Georgia";
 		context.textAlign = "right"
-		context.fillText("dot score: " + game.dot.value, 410, 440);
+		context.fillText("dot score: " + game.dot.value, game.canvas.width - 10, game.canvas.height - 60);
 	}
 	
 	context.textAlign = "left"
 	context.fillStyle = '#000';
 	context.font = "20px Georgia";
-	context.fillText("score: " + game.score, 10, 440);
+	context.fillText("score: " + game.score, 10, game.canvas.height - 60);
 	
 	if(game.highScore != 0) {
 		context.textAlign = "center"
 		context.fillStyle = '#000';
 		context.font = "20px Georgia";
-		context.fillText("high score: " + game.highScore, 200, 465);
+		context.fillText("high score: " + game.highScore, (game.canvas.width - 20)/ 2, game.canvas.height - 35);
 	}
 }
 
