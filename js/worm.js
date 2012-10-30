@@ -259,7 +259,9 @@ function drawGrid(context) {
 function drawWorm(context) {
 	// Draw the head-end dot of the worm (always visible)
 	context.fillStyle = '#000';
-	context.fillRect(game.grid.offsetX + worm.position.x * game.grid.size + .5, game.grid.offsetY + worm.position.y * game.grid.size + .5, game.grid.size, game.grid.size);
+	context.fillRect(game.grid.offsetX + worm.position.x * game.grid.size + .5, 
+		game.grid.offsetY + worm.position.y * game.grid.size + .5, 
+		game.grid.size, game.grid.size);
 	
 	// If the worm is longer than one block
 	if(worm.length > 1) {
@@ -271,8 +273,11 @@ function drawWorm(context) {
 		// For each of the rest of the blocks in the worm's tail
 		for(var n = worm.length - 1; n != 0; n--) {
 			// Do some math magic to create a gradient for the tail
-			context.fillStyle = 'rgb(' + Math.floor(0xbb/worm.length * n) + ', ' + Math.floor(0xbb/worm.length * n) + ', ' + Math.floor(0xbb/worm.length * n) + ')';
-			context.fillRect(game.grid.offsetX + worm.previousCells[worm.previousCells.length-n].x * game.grid.size + .5, game.grid.offsetY + worm.previousCells[worm.previousCells.length-n].y * game.grid.size + .5, game.grid.size, game.grid.size);
+			context.fillStyle = 'rgb(' + Math.floor(0xbb/worm.length * n) + ', ' + 
+				Math.floor(0xbb/worm.length * n) + ', ' + Math.floor(0xbb/worm.length * n) + ')';
+			context.fillRect(game.grid.offsetX + worm.previousCells[worm.previousCells.length-n].x * game.grid.size + .5, 
+				game.grid.offsetY + worm.previousCells[worm.previousCells.length-n].y * game.grid.size + .5, 
+				game.grid.size, game.grid.size);
 		}
 	}
 }
@@ -285,8 +290,11 @@ function drawDot(context) {
 	
 	// Fill in the dot on the grid with a transparency based off of the dot's current value and
 	//	the amount of time it has left in the stage. Should give a clean fading animation to the dot.
-	context.fillStyle = 'rgba(' + red + ', ' + green + ', ' + blue + ', ' + (game.dot.value + game.dot.timeToLiveThisStage/game.dot.timePerStage)/(game.dot.maxValue + 1) + ')';		
-	context.fillRect(game.grid.offsetX + game.dot.x * game.grid.size + .5, game.grid.offsetY + game.dot.y * game.grid.size + .5, game.grid.size, game.grid.size);
+	context.fillStyle = 'rgba(' + red + ', ' + green + ', ' + blue + ', ' + 
+		(game.dot.value + game.dot.timeToLiveThisStage/game.dot.timePerStage)/(game.dot.maxValue + 1) + ')';		
+	context.fillRect(game.grid.offsetX + game.dot.x * game.grid.size + .5, 
+		game.grid.offsetY + game.dot.y * game.grid.size + .5, 
+		game.grid.size, game.grid.size);
 	
 	// If game.dot.timeToLiveThisStage is positive, subtract the amount of time taken from the current frame
 	if(game.dot.timeToLiveThisStage > 0) {
@@ -305,7 +313,8 @@ function drawText(context) {
 		context.fillStyle = '#000';
 		context.font = "20px Georgia";
 		context.textAlign = "right"
-		context.fillText("dot score: " + game.dot.value, game.canvas.width - 10, game.canvas.height - 60);
+		context.fillText("dot score: " + game.dot.value, game.canvas.width - game.grid.offsetX, 
+			game.canvas.height - 60);
 	}
 	
 	context.textAlign = "left"
@@ -317,7 +326,9 @@ function drawText(context) {
 		context.textAlign = "center"
 		context.fillStyle = '#000';
 		context.font = "20px Georgia";
-		context.fillText("high score: " + game.highScore, (game.canvas.width - 20)/ 2, game.canvas.height - 35);
+		context.fillText("high score: " + game.highScore, 
+			(game.canvas.width - game.grid.offsetX + game.grid.offsetY)/ 2, 
+			game.canvas.height - 35);
 	}
 }
 
@@ -349,7 +360,8 @@ function collision() {
 	return false;
 }
 
-// Set the board back to default - handle all lives/game over logic elsewhere. Sets the initial position to be random
+// Set the board back to default - handle all lives/game over logic elsewhere.
+// Sets the initial position to be random
 function resetBoard() {
 	game.score = 0;
 	game.dot.exists = false;
