@@ -4,8 +4,6 @@ var worm = new Object;
 var LOCAL_STORAGE_VERSION = 'version';
 var LOCAL_STORAGE_HIGH_SCORE = 'highScore';
 
-var GRID_INNER_WIDTH = '1.0';
-var GRID_INNER_COLOR = '#ccc';
 var GRID_OUTER_WIDTH = '2.0';
 var GRID_OUTER_COLOR = '#000';
 var DOT_COLORS = Array('88A825', '35203B', '911146', 'CF4A39', 'ED8C2B', '4BB5C1', '345BC1');
@@ -225,14 +223,7 @@ function resetCanvas(canvas) {
 }
 
 function drawGrid(context) {
-	// Draw the smaller vertical lines
-	context.beginPath();
-	
-	context.closePath();
-	context.lineWidth = GRID_INNER_WIDTH;
-	context.strokeStyle = GRID_INNER_COLOR;
-	context.stroke();
-	
+
 	// Draw the outer boundry of the board
 	context.beginPath();
 	context.moveTo(game.grid.offsetX, game.grid.offsetY);
@@ -359,7 +350,7 @@ function resetBoard() {
 	worm.direction = "none";
 	worm.previousCells = new Array();
 	worm.length = 1;
-	worm.movedThisTurn = false;
+	worm.movedThisTurn = false; 
 	worm.cachedMove = 'none';
 	
 	worm.position.x = 1 + Math.floor(Math.random()*(game.grid.width/game.grid.size - 2));
