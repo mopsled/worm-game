@@ -359,6 +359,7 @@ function resetBoard() {
 }
 
 function makeRandomDot() {
+	makeRandomPowerup();
 	var position = getUnusedPosition();
 	
 	game.dot.x = position.x;
@@ -369,6 +370,23 @@ function makeRandomDot() {
 	game.dot.value = game.dot.maxValue;
 	game.dot.exists = true;
 }
+
+function makeRandomPowerup() {
+	
+	if(Math.random % 5 != 0) 
+		return;
+
+	var position = getUnusedPosition();
+
+	var dot = new Object;
+	dot.x = position.x;
+	dot.y = position.y;
+	dot.exists = true;
+	dot.powerup = POWERUPS[Math.random() % 5];
+
+	dots.push(dot);
+}
+
 
 function getUnusedPosition() {
 	var positionInWorm = true;
