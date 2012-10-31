@@ -6,9 +6,9 @@ var LOCAL_STORAGE_HIGH_SCORE = 'highScore';
 
 var GRID_OUTER_WIDTH = '2.0';
 var GRID_OUTER_COLOR = '#000';
-var DOT_COLORS = Array('88A825', 'CF4A39', 'ED8C2B', '4BB5C1', '345BC1');
+var DOT_COLORS = Array('88A825', 'CF4A39', 'ED8C2B', '4BB5C1', '345BC1', '51386E');
 
-var ITEMS = Array('FOOD', 'SHRINK', 'GROW', 'SLOW_TIME', 'BOMB');
+var ITEMS = Array('FOOD', 'SHRINK', 'GROW', 'SLOW_TIME', 'BOMB', 'PORTAL');
 
 var FOOD_ACTION = function() {
 	worm.length = (worm.length + 1);
@@ -39,7 +39,12 @@ var BOMB_ACTION = function() {
 	resetBoard();
 };
 
-var ITEMS_ACTIONS = Array(FOOD_ACTION, SHRINK_ACTION, GROW_ACTION, SLOW_TIME_ACTION, BOMB_ACTION);
+var PORTAL_ACTION = function() {
+	worm.position.x = getRandomX();
+	worm.position.y = getRandomY();
+};
+
+var ITEMS_ACTIONS = Array(FOOD_ACTION, SHRINK_ACTION, GROW_ACTION, SLOW_TIME_ACTION, BOMB_ACTION, PORTAL_ACTION);
 			
 var TIME_PER_STAGE = 250;
 var POWERUP_STAGES = 20;
