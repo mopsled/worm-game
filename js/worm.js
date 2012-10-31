@@ -30,7 +30,7 @@ BOMB_ACTION = function() {
 	resetBoard();
 };
 
-var ITEMS_ACTIONS = Array(FOOD_ACTION, SHRINK_SHRINK, GROW_ACTION, SLOW_TIME_ACTION, BOMB_ACTION);
+var ITEMS_ACTIONS = Array(FOOD_ACTION, SHRINK_ACTION, GROW_ACTION, SLOW_TIME_ACTION, BOMB_ACTION);
 			
 var TIME_PER_STAGE = 250;
 var POWERUP_STAGES = 20;
@@ -159,6 +159,8 @@ function updateBoard() {
 	}
 	
 	if(worm.direction != 'none') {
+		
+		drawDots(game.context);
 		if(game.dot.exists) {
 			drawDot(game.context);
 		} else {
@@ -294,7 +296,7 @@ function drawWorm(context) {
 }
 
 function drawDots(context) {
-	for (int i = 0; i < game.dots.length; i++) {
+	for (i = 0; i < game.dots.length; i++) {
 		var dot = game.dots[i];
 		var red = parseInt(dot.color.substr(0, 2), 16);
 		var green = parseInt(dot.color.substr(2, 2), 16);
@@ -302,10 +304,10 @@ function drawDots(context) {
 	
 		// Fill in the dot on the grid with a transparency based off of the dot's current value and
 		//	the amount of time it has left in the stage. Should give a clean fading animation to the dot.
-		context.fillStyle = 'rgba(' + red + ', ' + green + ', ' + blue + ', ' + 
-			(game.dot.value + game.dot.timeToLiveThisStage/game.dot.timePerStage)/(game.dot.maxValue + 1) + ')';		
-		context.fillRect(game.grid.offsetX + game.dot.x * game.grid.size + .5, 
-			game.grid.offsetY + game.dot.y * game.grid.size + .5, 
+		context.fillStyle = 'rgba(' + red + ', ' + green + ', ' + blue + ', ' + 2 + ')';
+
+		context.fillRect(game.grid.offsetX + dot.x * game.grid.size + .5, 
+			game.grid.offsetY + dot.y * game.grid.size + .5, 
 			game.grid.size, game.grid.size);
 	
 		// If game.dot.timeToLiveThisStage is positive, subtract the amount of time taken from the current frame
@@ -431,8 +433,8 @@ function makeRandomDot() {
 
 function makeRandomPowerup() {
 	
-	if(Math.random % 5 != 0) 
-		return;
+	//if(Math.random % 5 != 0) 
+	//	return;
 
 	var position = getUnusedPosition();
 
@@ -443,8 +445,7 @@ function makeRandomPowerup() {
 	dot.powerup = ITEMS[Math.random() % ITEMS.s];
 	dot.value = POWERUP_STAGES;
 	dot.timePerStage = TIME_PER_STAGE;
-	dot.color = DOT_COLORS[Math.random() % DOT_COLORS.length];
-
+	dot.color = DOT_COLORS[2];
 	game.dots.push(dot);
 }
 
