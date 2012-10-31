@@ -127,6 +127,7 @@ function updateBoard() {
 	if(worm.direction != 'none') {
 		if(game.dot.exists) {
 			drawDot(game.context);
+			drawPickup(game.context);
 		} else {
 			makeRandomDot();
 		}
