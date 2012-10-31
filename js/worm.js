@@ -25,8 +25,13 @@ var GROW_ACTION = function() {
 var SLOW_TIME_ACTION = function() {
 	originalSpeed = game.speed;
 	game.speed = originalSpeed * 2;
+	clearInterval(game.updateBoardIntervalId);
+	game.updateBoardIntervalId = setInterval('updateBoard()', game.speed);
+
 	setTimeout(function() {
 		game.speed = originalSpeed;
+		clearInterval(game.updateBoardIntervalId);
+		game.updateBoardIntervalId = setInterval('updateBoard()', game.speed);
 	}, 3000);
 };
 
@@ -121,7 +126,7 @@ function init() {
 	// Add key event listener
 	window.addEventListener('keydown', wormKeyHit, false);
 	
-	worm.updateBoardIntervalId = setInterval('updateBoard()', game.speed);
+	game.updateBoardIntervalId = setInterval('updateBoard()', game.speed);
 }
 
 function getRandomX() {
