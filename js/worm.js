@@ -309,14 +309,17 @@ function drawWorm(context) {
 }
 
 function drawDots(context) {
+	console.log(game.dots);
 	var i;
 	for (i = 0; i < game.dots.length; i++) {
-		// Strip the red, green, and blue values from the dot's color
-		var color = new Object();
-		color.red = parseInt(game.dots[i].color.substr(0, 2), 16);
-		color.green = parseInt(game.dots[i].color.substr(2, 2), 16);
-		color.blue = parseInt(game.dots[i].color.substr(4, 2), 16);
-		drawDot(game.dots[i],color,context);
+		if (typeof game.dots[i] !== "undefined") {
+			// Strip the red, green, and blue values from the dot's color
+			var color = new Object();
+			color.red = parseInt(game.dots[i].color.substr(0, 2), 16);
+			color.green = parseInt(game.dots[i].color.substr(2, 2), 16);
+			color.blue = parseInt(game.dots[i].color.substr(4, 2), 16);
+			drawDot(game.dots[i],color,context);
+		}
 	}	
 }
 
