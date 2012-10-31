@@ -269,6 +269,35 @@ function drawWorm(context) {
 	}
 }
 
+function drawDots(context) {
+	for (int i = 0; i < game.dots.length; i++) {
+		var dot = game.dots[i];
+		var red = parseInt(dot.color.substr(0, 2), 16);
+		var green = parseInt(dot.color.substr(2, 2), 16);
+		var blue = parseInt(dot.color.substr(4, 2), 16);
+	
+		// Fill in the dot on the grid with a transparency based off of the dot's current value and
+		//	the amount of time it has left in the stage. Should give a clean fading animation to the dot.
+		context.fillStyle = 'rgba(' + red + ', ' + green + ', ' + blue + ', ' + 
+			(game.dot.value + game.dot.timeToLiveThisStage/game.dot.timePerStage)/(game.dot.maxValue + 1) + ')';		
+		context.fillRect(game.grid.offsetX + game.dot.x * game.grid.size + .5, 
+			game.grid.offsetY + game.dot.y * game.grid.size + .5, 
+			game.grid.size, game.grid.size);
+	
+		// If game.dot.timeToLiveThisStage is positive, subtract the amount of time taken from the current frame
+		if(game.dot.timeToLiveThisStage > 0) {
+			game.dot.timeToLiveThisStage -= game.speed;
+		}
+	
+		// If the dot value isn't at the minimum and timeToLiveThisStage has hit zero
+		if(game.dot.value > game.dot.minValue && (game.dot.timeToLiveThisStage <= 0)) {
+			game.dot.value -= 1;
+			game.dot.timeToLiveThisStage = game.dot.timePerStage;
+		}
+	}
+	
+}
+
 function drawDot(context) {
 	// Strip the red, green, and blue values from the dot's color
 	var red = parseInt(game.dot.color.substr(0, 2), 16);
@@ -390,6 +419,7 @@ function makeRandomPowerup() {
 	dot.powerup = ITEMS[Math.random() % ITEMS.s];
 	dot.value = POWERUP_STAGES;
 	dot.timePerStage = TIME_PER_STAGE;
+	dot.color = DOT_COLORS[Math.random() % DOT_COLORS.length];
 
 	game.dots.push(dot);
 }
