@@ -7,6 +7,30 @@ var LOCAL_STORAGE_HIGH_SCORE = 'highScore';
 var GRID_OUTER_WIDTH = '2.0';
 var GRID_OUTER_COLOR = '#000';
 var DOT_COLORS = Array('88A825', '35203B', '911146', 'CF4A39', 'ED8C2B', '4BB5C1', '345BC1');
+
+var ITEMS = Array('FOOD', 'SHRINK', 'GROW', 'SLOW_TIME', 'BOMB');
+
+FOOD_ACTION = function() {
+	worm.length = (worm.length + 1) % worm.maxSize;
+};
+
+SHRINK_ACTION = function() {
+	worm.length = Math.max(1, worm.length / 2);
+};
+
+GROW_ACTION = function() {
+	worm.length  = Math.max(1, worm.length * 1.5);
+};
+
+SLOW_TIME_ACTION = function() {
+	// ??
+};
+
+BOMB_ACTION = function() {
+	resetBoard();
+};
+
+var ITEMS_ACTIONS = Array(FOOD_ACTION, SHRINK_SHRINK, GROW_ACTION, SLOW_TIME_ACTION, BOMB_ACTION);
 			
 // Initialize all worm properties and event listeners
 function init() {
