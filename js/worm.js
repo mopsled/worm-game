@@ -276,38 +276,44 @@ function drawWorm(context) {
 
 function drawDots(context) {
 	// Strip the red, green, and blue values from the dot's color
-	var rgb = "50,225,50,";
+	var color = new Object;
+	color.red = 50;
+	color.green = 225;
+	color.blue = 50;
 	
+	
+}
+
+function drawDot(dot,color) {
 	// Fill in the dot on the grid with a transparency based off of the dot's current value and
 	//	the amount of time it has left in the stage. Should give a clean fading animation to the dot.
-	context.fillStyle = 'rgba(' + rgb + 
-		(game.dot.value + game.dot.timeToLiveThisStage/game.dot.timePerStage)/(game.dot.maxValue + 1) + ')';		
-	context.fillRect(game.grid.offsetX + game.dot.x * game.grid.size + .5, 
-		game.grid.offsetY + game.dot.y * game.grid.size + .5, 
-		game.grid.size, game.grid.size);
+	context.fillStyle = 'rgba(' + color.red + "," + color.green + "," + color.blue "," + 
+		(dot.value + dot.timeToLiveThisStage/dot.timePerStage)/(game.dot.maxValue + 1) + ')';		
+	context.fillRect(game.grid.offsetX + dot.x * game.grid.size + .5, 
+					 game.grid.offsetY + dot.y * game.grid.size + .5, 
+					 game.grid.size, game.grid.size);
 	
 	// If game.dot.timeToLiveThisStage is positive, subtract the amount of time taken from the current frame
-	if(game.dot.timeToLiveThisStage > 0) {
-		game.dot.timeToLiveThisStage -= game.speed;
+	if(dot.timeToLiveThisStage > 0) {
+		dot.timeToLiveThisStage -= game.speed;
 	}
 	
 	// If the dot value isn't at the minimum and timeToLiveThisStage has hit zero
-	if(game.dot.value > game.dot.minValue && (game.dot.timeToLiveThisStage <= 0)) {
-		game.dot.value -= 1;
-		game.dot.timeToLiveThisStage = game.dot.timePerStage;
+	if(dot.value > game.dot.minValue && (dot.timeToLiveThisStage <= 0)) {
+		dot.value -= 1;
+		dot.timeToLiveThisStage = dot.timePerStage;
 	}
 }
 
 function makeRandomDots() {
 	var position = getUnusedPosition();
 	
-	game.dot.x = position.x;
-	game.dot.y = position.y;
-
-	game.dot.color = DOT_COLORS[0];
-	game.dot.timeToLiveThisStage = game.dot.timePerStage;
-	game.dot.value = game.dot.maxValue;
-	game.dot.exists = true;
+	dot.x = position.x;
+	dot.y = position.y;
+	dot.color = DOT_COLORS[0];
+	dot.timeToLiveThisStage = game.dot.timePerStage;
+	dot.value = game.dot.maxValue;
+	dot.exists = true;
 }
 
 // function drawPickups(context) {
