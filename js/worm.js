@@ -127,6 +127,12 @@ function updateBoard() {
 	}
 
 	drawWorm(game.context);
+
+	if(game.dot.x == worm.position.x && game.dot.y == worm.position.y) {
+		game.dot.exists = false;
+		worm.length += 1;
+		game.score += game.dot.value;
+	}
 	
 	if(worm.direction != 'none') {
 		if(game.dot.exists) {
@@ -141,11 +147,7 @@ function updateBoard() {
 		resetBoard();
 	}
 
-	if(game.dot.x == worm.position.x && game.dot.y == worm.position.y) {
-		game.dot.exists = false;
-		worm.length += 1;
-		game.score += game.dot.value;
-	}
+	
 	
 	if(game.score > game.highScore) {
 		setHighScore(game.score);
