@@ -23,7 +23,11 @@ var GROW_ACTION = function() {
 };
 
 var SLOW_TIME_ACTION = function() {
-	// ??
+	originalSpeed = game.speed;
+	game.speed = originalSpeed * 2;
+	setTimeout(function() {
+		game.speed = originalSpeed;
+	}, 3000);
 };
 
 var BOMB_ACTION = function() {
@@ -305,7 +309,6 @@ function drawWorm(context) {
 }
 
 function drawDots(context) {
-	console.log(game.dots);
 	var i;
 	for (i = 0; i < game.dots.length; i++) {
 		// Strip the red, green, and blue values from the dot's color
@@ -313,7 +316,6 @@ function drawDots(context) {
 		color.red = parseInt(game.dots[i].color.substr(0, 2), 16);
 		color.green = parseInt(game.dots[i].color.substr(2, 2), 16);
 		color.blue = parseInt(game.dots[i].color.substr(4, 2), 16);
-		console.log(color);
 		drawDot(game.dots[i],color,context);
 	}	
 }
@@ -322,7 +324,7 @@ function drawDot(dot,color,context) {
 	// Fill in the dot on the grid with a transparency based off of the dot's current value and
 	//	the amount of time it has left in the stage. Should give a clean fading animation to the dot.
 	context.fillStyle = 'rgba(' + color.red + ', ' + color.green + ', ' + color.blue + ', ' + 
-		(dot.value + dot.timeToLiveThisStage/game.dot.timePerStage)/(game.dot.maxValue + 1) + ')';		
+		(dot.value + dot.timeToLiveThisStage/game.dot.timePerStage)/(game.dot.maxValue + 1) + ')';	
 	context.fillRect(game.grid.offsetX + dot.x * game.grid.size + .5, 
 					 game.grid.offsetY + dot.y * game.grid.size + .5, 
 					 game.grid.size, game.grid.size);
@@ -352,7 +354,6 @@ function makeRandomDots() {
 	game.dots.push(dot);
 
 	var pickupType = Math.floor(Math.random()*ITEMS.length);
-	console.log(pickupType);
 	if (pickupType != 0) {
 		position = getUnusedPosition();
 		var pickup = new Object();
@@ -366,30 +367,6 @@ function makeRandomDots() {
 		game.dots.push(pickup);
 	}
 }
-
-// function drawPickups(context) {
-// 	var dot = makeRandomPowerup();
-// 	console.log(dot);
-// 	if (dot[0] == -1)
-// 		return;
-// 	context.fillStyle = DOT_COLORS[Math.random() % DOT_COLORS.length];
-// 	context.fillRect(dot[0],dot[1],game.grid.size,game.grid.size);
-// }
-
-// function makeRandomPowerup() {
-// 	if(Math.random() % 3 != 0) 
-// 		return [-1,-1];
-
-// 	var position = getUnusedPosition();
-
-// 	var dot = new Object();
-// 	dot.x = position.x;
-// 	dot.y = position.y;
-// 	dot.exists = true;
-// 	//dot.powerup = POWERUPS[Math.random() % 5];
-// 	game.dots.push(dot);
-// 	return [dot.x,dot.y];
-// }
 
 function drawText(context) {
 	if(worm.direction != 'none') {
@@ -454,6 +431,8 @@ function resetBoard() {
 	worm.length = 1;
 	worm.movedThisTurn = false; 
 	worm.cachedMove = 'none';
+
+	game.dots.length = new Array();
 	
 	worm.position.x = 1 + Math.floor(Math.random()*(game.grid.width/game.grid.size - 2));
 	worm.position.y = 1 + Math.floor(Math.random()*(game.grid.height/game.grid.size - 2));	
