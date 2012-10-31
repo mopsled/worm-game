@@ -425,6 +425,8 @@ function resetBoard() {
 	worm.length = 1;
 	worm.movedThisTurn = false; 
 	worm.cachedMove = 'none';
+
+	game.dots.length = new Array();
 	
 	worm.position.x = 1 + Math.floor(Math.random()*(game.grid.width/game.grid.size - 2));
 	worm.position.y = 1 + Math.floor(Math.random()*(game.grid.height/game.grid.size - 2));	
