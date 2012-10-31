@@ -368,7 +368,7 @@ function makeRandomDots() {
 		pickup.color = DOT_COLORS[pickupType];
 		pickup.timeToLiveThisStage = game.dot.timePerStage;
 		pickup.value = game.dot.maxValue;
-		pickup.type = ITEMS_ACTIONS[3];
+		pickup.type = ITEMS_ACTIONS[pickupType];
 		pickup.exists = true;
 		game.dots.push(pickup);
 	}
