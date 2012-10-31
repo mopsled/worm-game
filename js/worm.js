@@ -11,7 +11,7 @@ var DOT_COLORS = Array('88A825', '35203B', '911146', 'CF4A39', 'ED8C2B', '4BB5C1
 var ITEMS = Array('FOOD', 'SHRINK', 'GROW', 'SLOW_TIME', 'BOMB');
 
 FOOD_ACTION = function() {
-	worm.length = (worm.length + 1) % worm.maxSize;
+	worm.length = (worm.length + 1);
 };
 
 SHRINK_ACTION = function() {
@@ -19,7 +19,7 @@ SHRINK_ACTION = function() {
 };
 
 GROW_ACTION = function() {
-	worm.length  = Math.max(1, worm.length * 1.5);
+	worm.length = (worm.length * 1.5)  % worm.maxSize;
 };
 
 SLOW_TIME_ACTION = function() {
