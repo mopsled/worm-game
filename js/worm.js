@@ -6,12 +6,13 @@ var LOCAL_STORAGE_HIGH_SCORE = 'highScore';
 
 var GRID_OUTER_WIDTH = '2.0';
 var GRID_OUTER_COLOR = '#000';
-var DOT_COLORS = Array('88A825', 'CF4A39', 'ED8C2B', '4BB5C1', '345BC1');
+var DOT_COLORS = Array('88A825', '345BC1', 'ED8C2B', 'C1BC36', 'CF4A39');
 
 var ITEMS = Array('FOOD', 'SHRINK', 'GROW', 'SLOW_TIME', 'BOMB');
 
 var FOOD_ACTION = function() {
 	worm.length = (worm.length + 1);
+	isFoodOut = false;
 };
 
 var SHRINK_ACTION = function() {
@@ -34,6 +35,8 @@ var SLOW_TIME_ACTION = function() {
 		game.updateBoardIntervalId = setInterval('updateBoard()', game.speed);
 	}, 3000);
 };
+
+var isFoodOut = false;
 
 var BOMB_ACTION = function() {
 	resetBoard();
@@ -171,7 +174,7 @@ function updateBoard() {
 	collideDots();
 	
 	if(worm.direction != 'none') {
-		if(game.dots.length > 0) {
+		if(isFoodOut) {
 			drawDots(game.context);
 		} else {
 			makeRandomDots();
@@ -315,7 +318,6 @@ function drawWorm(context) {
 }
 
 function drawDots(context) {
-	console.log(game.dots);
 	var i;
 	for (i = 0; i < game.dots.length; i++) {
 		if (typeof game.dots[i] !== "undefined") {
@@ -355,21 +357,22 @@ function makeRandomDots() {
 	var dot = new Object();
 	dot.x = position.x;
 	dot.y = position.y;
-	dot.color = DOT_COLORS[3];
-	dot.timeToLiveThisStage = game.dot.timePerStage;
+	dot.color = DOT_COLORS[0];
+	dot.timeToLiveThisStage = 2 * game.dot.timePerStage;
 	dot.value = game.dot.maxValue;
 	dot.type = ITEMS_ACTIONS[0];
 	dot.exists = true;
 	game.dots.push(dot);
+	isFoodOut = true;
 
 	var pickupType = Math.floor(Math.random()*ITEMS.length);
-	if (pickupType != 0) {
+	if (pickupType != 0 && Math.random() > 0.6) {
 		position = getUnusedPosition();
 		var pickup = new Object();
 		pickup.x = position.x;
 		pickup.y = position.y;
 		pickup.color = DOT_COLORS[pickupType];
-		pickup.timeToLiveThisStage = game.dot.timePerStage;
+		pickup.timeToLiveThisStage = 2 * game.dot.timePerStage;
 		pickup.value = game.dot.maxValue;
 		pickup.type = ITEMS_ACTIONS[pickupType];
 		pickup.exists = true;
@@ -441,7 +444,8 @@ function resetBoard() {
 	worm.movedThisTurn = false; 
 	worm.cachedMove = 'none';
 
-	game.dots.length = new Array();
+	game.dots = new Array();
+	isFoodOut = false;
 	
 	worm.position.x = 1 + Math.floor(Math.random()*(game.grid.width/game.grid.size - 2));
 	worm.position.y = 1 + Math.floor(Math.random()*(game.grid.height/game.grid.size - 2));	
