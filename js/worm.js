@@ -32,6 +32,8 @@ BOMB_ACTION = function() {
 
 var ITEMS_ACTIONS = Array(FOOD_ACTION, SHRINK_SHRINK, GROW_ACTION, SLOW_TIME_ACTION, BOMB_ACTION);
 			
+var TIME_PER_STAGE = 250;
+var POWERUP_STAGES = 20;
 // Initialize all worm properties and event listeners
 function init() {
 	// game properties:
@@ -409,9 +411,11 @@ function makeRandomPowerup() {
 	dot.x = position.x;
 	dot.y = position.y;
 	dot.exists = true;
-	dot.powerup = POWERUPS[Math.random() % 5];
+	dot.powerup = ITEMS[Math.random() % ITEMS.s];
+	dot.value = POWERUP_STAGES;
+	dot.timePerStage = TIME_PER_STAGE;
 
-	dots.push(dot);
+	game.dots.push(dot);
 }
 
 
