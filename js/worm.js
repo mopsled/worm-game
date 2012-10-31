@@ -225,6 +225,7 @@ function resetCanvas(canvas) {
 }
 
 function drawGrid(context) {
+
 	// Draw the outer boundry of the board
 	context.beginPath();
 	context.moveTo(game.grid.offsetX, game.grid.offsetY);
@@ -240,10 +241,10 @@ function drawGrid(context) {
 
 function drawWorm(context) {
 	// Draw the head-end dot of the worm (always visible)
-	context.fillStyle = '#000';
-	context.fillRect(game.grid.offsetX + worm.position.x * game.grid.size + .5, 
+	context.fillStyle = '#000000';
+	context.fillRect(game.grid.offsetX + worm.position.x * game.grid.size - .5, 
 		game.grid.offsetY + worm.position.y * game.grid.size + .5, 
-		game.grid.size, game.grid.size);
+		game.grid.size + 1, game.grid.size + 1);
 	
 	// If the worm is longer than one block
 	if(worm.length > 1) {
@@ -255,11 +256,11 @@ function drawWorm(context) {
 		// For each of the rest of the blocks in the worm's tail
 		for(var n = worm.length - 1; n != 0; n--) {
 			// Do some math magic to create a gradient for the tail
-			context.fillStyle = 'rgb(' + Math.floor(0xbb/worm.length * n) + ', ' + 
-				Math.floor(0xbb/worm.length * n) + ', ' + Math.floor(0xbb/worm.length * n) + ')';
-			context.fillRect(game.grid.offsetX + worm.previousCells[worm.previousCells.length-n].x * game.grid.size + .5, 
+			context.fillStyle = 'rgb(' + Math.floor(0x00/worm.length * n) + ', ' + 
+				Math.floor(0xbb/worm.length * n) + ', ' + Math.floor(0x00/worm.length * n) + ')';
+			context.fillRect(game.grid.offsetX + worm.previousCells[worm.previousCells.length-n].x * game.grid.size - .5, 
 				game.grid.offsetY + worm.previousCells[worm.previousCells.length-n].y * game.grid.size + .5, 
-				game.grid.size, game.grid.size);
+				game.grid.size + 1, game.grid.size + 1);
 		}
 	}
 }
