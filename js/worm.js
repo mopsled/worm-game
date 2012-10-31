@@ -23,7 +23,11 @@ var GROW_ACTION = function() {
 };
 
 var SLOW_TIME_ACTION = function() {
-	// ??
+	originalSpeed = game.speed;
+	game.speed = originalSpeed / 2;
+	setTimeout(function() {
+		game.speed = originalSpeed;
+	}, 3000);
 };
 
 var BOMB_ACTION = function() {
