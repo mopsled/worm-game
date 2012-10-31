@@ -15,11 +15,11 @@ var FOOD_ACTION = function() {
 };
 
 var SHRINK_ACTION = function() {
-	worm.length = Math.max(1, worm.length / 2);
+	worm.length = Math.max(1, Math.floor(worm.length / 2));
 };
 
 var GROW_ACTION = function() {
-	worm.length = (worm.length * 1.5)  % worm.maxSize;
+	worm.length = Math.floor(worm.length * 1.5)  % worm.maxSize;
 };
 
 var SLOW_TIME_ACTION = function() {
@@ -190,7 +190,8 @@ function collideDots() {
 		
 		if(dot.x == worm.position.x && dot.y == worm.position.y) {
 			dot['type']();
-			delete game.dots[i];
+			game.dots.splice(i,1);
+			return;
 		}
 	}
 }
