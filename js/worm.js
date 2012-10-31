@@ -9,6 +9,7 @@ var GRID_OUTER_COLOR = '#000';
 var DOT_COLORS = Array('88A825', '35203B', '911146', 'CF4A39', 'ED8C2B', '4BB5C1', '345BC1');
 			
 var TIME_PER_STAGE = 250;
+var POWERUP_STAGES = 20;
 // Initialize all worm properties and event listeners
 function init() {
 	// game properties:
@@ -385,7 +386,8 @@ function makeRandomPowerup() {
 	dot.y = position.y;
 	dot.exists = true;
 	dot.powerup = ITEMS[Math.random() % ITEMS.s];
-	dot.ttl = 5000;
+	dot.value = POWERUP_STAGES;
+	dot.timePerStage = TIME_PER_STAGE;
 
 	game.dots.push(dot);
 }
