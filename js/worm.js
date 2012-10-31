@@ -6,7 +6,7 @@ var LOCAL_STORAGE_HIGH_SCORE = 'highScore';
 
 var GRID_OUTER_WIDTH = '2.0';
 var GRID_OUTER_COLOR = '#000';
-var DOT_COLORS = Array('88A825', '35203B', '911146', 'CF4A39', 'ED8C2B', '4BB5C1', '345BC1');
+var DOT_COLORS = Array('88A825', 'CF4A39', 'ED8C2B', '4BB5C1', '345BC1');
 
 var ITEMS = Array('FOOD', 'SHRINK', 'GROW', 'SLOW_TIME', 'BOMB');
 
@@ -302,14 +302,17 @@ function drawWorm(context) {
 }
 
 function drawDots(context) {
-	// Strip the red, green, and blue values from the dot's color
-	var color = new Object();
-	color.red = 50;
-	color.green = 225;
-	color.blue = 50;
-	
-	drawDot(game.dots[0],color,context);
-	
+	console.log(game.dots);
+	var i;
+	for (i = 0; i < game.dots.length; i++) {
+		// Strip the red, green, and blue values from the dot's color
+		var color = new Object();
+		color.red = parseInt(game.dots[i].color.substr(0, 2), 16);
+		color.green = parseInt(game.dots[i].color.substr(2, 2), 16);
+		color.blue = parseInt(game.dots[i].color.substr(4, 2), 16);
+		console.log(color);
+		drawDot(game.dots[i],color,context);
+	}	
 }
 
 function drawDot(dot,color,context) {
@@ -341,8 +344,25 @@ function makeRandomDots() {
 	dot.color = DOT_COLORS[0];
 	dot.timeToLiveThisStage = game.dot.timePerStage;
 	dot.value = game.dot.maxValue;
+	dot.type = ITEMS[0];
 	dot.exists = true;
 	game.dots.push(dot);
+
+	var pickupType = Math.floor(Math.random()*ITEMS.length);
+	console.log(pickupType);
+	if (pickupType != 0) {
+		position = getUnusedPosition();
+		var pickup = new Object();
+		pickup.x = position.x;
+		pickup.y = position.y;
+		pickup.color = DOT_COLORS[pickupType];
+		pickup.timeToLiveThisStage = game.dot.timePerStage;
+		pickup.value = game.dot.maxValue;
+		pickup.type = ITEMS[pickupType];
+		pickup.exists = true;
+		game.dots.push(pickup);
+	}
+
 }
 
 // function drawPickups(context) {
