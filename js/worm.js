@@ -1,5 +1,5 @@
-var game = new Object;
-var worm = new Object;
+var game = new Object();
+var worm = new Object();
 
 var LOCAL_STORAGE_VERSION = 'version';
 var LOCAL_STORAGE_HIGH_SCORE = 'highScore';
@@ -30,7 +30,7 @@ var BOMB_ACTION = function() {
 	resetBoard();
 };
 
-var ITEMS_ACTIONS = Array(FOOD_ACTION, SHRINK_SHRINK, GROW_ACTION, SLOW_TIME_ACTION, BOMB_ACTION);
+var ITEMS_ACTIONS = Array(FOOD_ACTION, SHRINK_ACTION, GROW_ACTION, SLOW_TIME_ACTION, BOMB_ACTION);
 			
 var TIME_PER_STAGE = 250;
 var POWERUP_STAGES = 20;
@@ -54,7 +54,7 @@ function init() {
 	//	.direction - a variable that holds the direction the worm is currently moving in:
 	//		'none' - for not moving
 	//		and 'left', 'right', 'up', and 'down' for any move in those directions
-	//	.previousCells - an array of objects (previousCells[index].x and previousCells[index].y) holding
+	//	.previousCells - an array of object()s (previousCells[index].x and previousCells[index].y) holding
 	//		the most recent places that the worm has been, with up to worm.maxSize places
 	//	.length - the current length of the worm
 	//	.movedThisTurn - holds true value if a move has been entered this turn
@@ -84,7 +84,7 @@ function init() {
 	//	.size - In pixels, size of a side of a square in the grid
 	//	.width, .height - In pixels, should be a multiple of the size
 	//	.offsetX, .offsetY - the offset of the grid in the X and Y direction on the canvas
-	game.grid = new Object;
+	game.grid = new Object();
 	game.grid.size = 20;
 	game.grid.width = 700;
 	game.grid.height = 400;
@@ -100,18 +100,17 @@ function init() {
 	//	.color - a hexidecimal string (e.g. '123456') that holds the dot's color
 	//	.timeToLiveThisStage - the number of milliseconds left in the current stage
 	//	.value - the current value of the dot on the board (between .minValue and .maxValue)
-	game.dot = new Object;
+	game.dot = new Object();
 	game.dot.timePerStage = 250;
 	game.dot.minValue = 6;
 	game.dot.maxValue = 16;
 	game.dot.exists = false;
-	game.pickup.exists = false;
 	
 	game.dots = new Array();
 
 	// Position properties: worm.position
 	//	.x, .y - the current x and y position (in grid value, not pixel value) of the worm
-	worm.position = new Object;
+	worm.position = new Object();
 	worm.position.x = getRandomX();
 	worm.position.y = getRandomY();
 	
@@ -136,7 +135,7 @@ function updateBoard() {
 	
 	// If the worm is currently playing, add its current position to previousCells
 	if(worm.direction != 'none') {
-		position = new Object;
+		position = new Object();
 		position.x = worm.position.x;
 		position.y = worm.position.y;
 		worm.previousCells.push(position);
@@ -168,7 +167,7 @@ function updateBoard() {
 	}
 	
 	if(worm.direction != 'none') {
-		if(items.size() > 0) {
+		if(game.dots.length > 0) {
 			drawDots(game.context);
 		} else {
 			makeRandomDots();
@@ -304,19 +303,20 @@ function drawWorm(context) {
 
 function drawDots(context) {
 	// Strip the red, green, and blue values from the dot's color
-	var color = new Object;
+	var color = new Object();
 	color.red = 50;
 	color.green = 225;
 	color.blue = 50;
 	
+	drawDot(game.dots[0],color,context);
 	
 }
 
-function drawDot(dot,color) {
+function drawDot(dot,color,context) {
 	// Fill in the dot on the grid with a transparency based off of the dot's current value and
 	//	the amount of time it has left in the stage. Should give a clean fading animation to the dot.
-	context.fillStyle = 'rgba(' + color.red + "," + color.green + "," + color.blue "," + 
-		(dot.value + dot.timeToLiveThisStage/dot.timePerStage)/(game.dot.maxValue + 1) + ')';		
+	context.fillStyle = 'rgba(' + color.red + ', ' + color.green + ', ' + color.blue + ', ' + 
+		(dot.value + dot.timeToLiveThisStage/game.dot.timePerStage)/(game.dot.maxValue + 1) + ')';		
 	context.fillRect(game.grid.offsetX + dot.x * game.grid.size + .5, 
 					 game.grid.offsetY + dot.y * game.grid.size + .5, 
 					 game.grid.size, game.grid.size);
@@ -335,13 +335,14 @@ function drawDot(dot,color) {
 
 function makeRandomDots() {
 	var position = getUnusedPosition();
-	
+	var dot = new Object();
 	dot.x = position.x;
 	dot.y = position.y;
 	dot.color = DOT_COLORS[0];
 	dot.timeToLiveThisStage = game.dot.timePerStage;
 	dot.value = game.dot.maxValue;
 	dot.exists = true;
+	game.dots.push(dot);
 }
 
 // function drawPickups(context) {
@@ -359,7 +360,7 @@ function makeRandomDots() {
 
 // 	var position = getUnusedPosition();
 
-// 	var dot = new Object;
+// 	var dot = new Object();
 // 	dot.x = position.x;
 // 	dot.y = position.y;
 // 	dot.exists = true;
