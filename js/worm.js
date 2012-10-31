@@ -7,7 +7,33 @@ var LOCAL_STORAGE_HIGH_SCORE = 'highScore';
 var GRID_OUTER_WIDTH = '2.0';
 var GRID_OUTER_COLOR = '#000';
 var DOT_COLORS = Array('88A825', '35203B', '911146', 'CF4A39', 'ED8C2B', '4BB5C1', '345BC1');
+
+var ITEMS = Array('FOOD', 'SHRINK', 'GROW', 'SLOW_TIME', 'BOMB');
+
+var FOOD_ACTION = function() {
+	worm.length = (worm.length + 1);
+};
+
+var SHRINK_ACTION = function() {
+	worm.length = Math.max(1, worm.length / 2);
+};
+
+var GROW_ACTION = function() {
+	worm.length = (worm.length * 1.5)  % worm.maxSize;
+};
+
+var SLOW_TIME_ACTION = function() {
+	// ??
+};
+
+var BOMB_ACTION = function() {
+	resetBoard();
+};
+
+var ITEMS_ACTIONS = Array(FOOD_ACTION, SHRINK_SHRINK, GROW_ACTION, SLOW_TIME_ACTION, BOMB_ACTION);
 			
+var TIME_PER_STAGE = 250;
+var POWERUP_STAGES = 20;
 // Initialize all worm properties and event listeners
 function init() {
 	// game properties:
@@ -134,6 +160,12 @@ function updateBoard() {
 	}
 
 	drawWorm(game.context);
+
+	if(game.dot.x == worm.position.x && game.dot.y == worm.position.y) {
+		game.dot.exists = false;
+		worm.length += 1;
+		game.score += game.dot.value;
+	}
 	
 	if(worm.direction != 'none') {
 		if(items.size() > 0) {
@@ -148,11 +180,7 @@ function updateBoard() {
 		resetBoard();
 	}
 
-	if(game.dot.x == worm.position.x && game.dot.y == worm.position.y) {
-		game.dot.exists = false;
-		worm.length += 1;
-		game.score += game.dot.value;
-	}
+	
 	
 	if(game.score > game.highScore) {
 		setHighScore(game.score);
