@@ -185,9 +185,8 @@ function collideDots() {
 		var dot = game.dots[i];
 		
 		if(dot.x == worm.position.x && dot.y == worm.position.y) {
-			dot.exists = false;
-			worm.length += 1;
-			//game.score += game.dot.value;
+			dot['type']();
+			delete game.dots[i];
 		}
 	}
 }
@@ -336,7 +335,7 @@ function drawDot(dot,color,context) {
 	// If the dot value isn't at the minimum and timeToLiveThisStage has hit zero
 	if(dot.value > game.dot.minValue && (dot.timeToLiveThisStage <= 0)) {
 		dot.value -= 1;
-		dot.timeToLiveThisStage = dot.timePerStage;
+		dot.timeToLiveThisStage = game.dot.timePerStage;
 	}
 }
 
@@ -348,7 +347,7 @@ function makeRandomDots() {
 	dot.color = DOT_COLORS[3];
 	dot.timeToLiveThisStage = game.dot.timePerStage;
 	dot.value = game.dot.maxValue;
-	dot.type = ITEMS[0];
+	dot.type = ITEMS_ACTIONS[0];
 	dot.exists = true;
 	game.dots.push(dot);
 
@@ -362,11 +361,10 @@ function makeRandomDots() {
 		pickup.color = DOT_COLORS[pickupType];
 		pickup.timeToLiveThisStage = game.dot.timePerStage;
 		pickup.value = game.dot.maxValue;
-		pickup.type = ITEMS[pickupType];
+		pickup.type = ITEMS_ACTIONS[pickupType];
 		pickup.exists = true;
 		game.dots.push(pickup);
 	}
-
 }
 
 // function drawPickups(context) {
@@ -460,38 +458,6 @@ function resetBoard() {
 	worm.position.x = 1 + Math.floor(Math.random()*(game.grid.width/game.grid.size - 2));
 	worm.position.y = 1 + Math.floor(Math.random()*(game.grid.height/game.grid.size - 2));	
 }
-
-function makeRandomDot() {
-	makeRandomPowerup();
-	var position = getUnusedPosition();
-	
-	game.dot.x = position.x;
-	game.dot.y = position.y;
-
-	game.dot.color = DOT_COLORS[0];
-	game.dot.timeToLiveThisStage = game.dot.timePerStage;
-	game.dot.value = game.dot.maxValue;
-	game.dot.exists = true;
-}
-
-function makeRandomPowerup() {
-	
-	//if(Math.random % 5 != 0) 
-	//	return;
-
-	var position = getUnusedPosition();
-
-	var dot = new Object;
-	dot.x = position.x;
-	dot.y = position.y;
-	dot.exists = true;
-	dot.powerup = ITEMS[Math.random() % ITEMS.s];
-	dot.value = POWERUP_STAGES;
-	dot.timePerStage = TIME_PER_STAGE;
-	dot.color = DOT_COLORS[2];
-	game.dots.push(dot);
-}
-
 
 function getUnusedPosition() {
 	var positionInWorm = true;
