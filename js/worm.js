@@ -8,6 +8,7 @@ var GRID_OUTER_WIDTH = '2.0';
 var GRID_OUTER_COLOR = '#000';
 var DOT_COLORS = Array('88A825', '35203B', '911146', 'CF4A39', 'ED8C2B', '4BB5C1', '345BC1');
 			
+var TIME_PER_STAGE = 250;
 // Initialize all worm properties and event listeners
 function init() {
 	// game properties:
@@ -383,9 +384,10 @@ function makeRandomPowerup() {
 	dot.x = position.x;
 	dot.y = position.y;
 	dot.exists = true;
-	dot.powerup = POWERUPS[Math.random() % 5];
+	dot.powerup = ITEMS[Math.random() % ITEMS.s];
+	dot.ttl = 5000;
 
-	dots.push(dot);
+	game.dots.push(dot);
 }
 
 
