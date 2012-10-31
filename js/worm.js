@@ -79,19 +79,28 @@ function init() {
 	game.dot.minValue = 6;
 	game.dot.maxValue = 16;
 	game.dot.exists = false;
+	game.pickup.exists = false;
 	
 	game.dots = new Array();
 
 	// Position properties: worm.position
 	//	.x, .y - the current x and y position (in grid value, not pixel value) of the worm
 	worm.position = new Object;
-	worm.position.x = Math.floor(Math.random()*(game.grid.width/game.grid.size + 1));
-	worm.position.y = Math.floor(Math.random()*(game.grid.height/game.grid.size + 1));
+	worm.position.x = getRandomX();
+	worm.position.y = getRandomY();
 	
 	// Add key event listener
 	window.addEventListener('keydown', wormKeyHit, false);
 	
 	worm.updateBoardIntervalId = setInterval('updateBoard()', game.speed);
+}
+
+function getRandomX() {
+	return Math.floor(Math.random()*(game.grid.width/game.grid.size + 1));
+}
+
+function getRandomY() {
+	return Math.floor(Math.random()*(game.grid.height/game.grid.size + 1));
 }
 
 // Redraw the board
@@ -127,11 +136,10 @@ function updateBoard() {
 	drawWorm(game.context);
 	
 	if(worm.direction != 'none') {
-		if(game.dot.exists) {
-			drawDot(game.context);
-			drawPickup(game.context);
+		if(items.size() > 0) {
+			drawDots(game.context);
 		} else {
-			makeRandomDot();
+			makeRandomDots();
 		}
 	}
 
@@ -266,15 +274,13 @@ function drawWorm(context) {
 	}
 }
 
-function drawDot(context) {
+function drawDots(context) {
 	// Strip the red, green, and blue values from the dot's color
-	var red = parseInt(game.dot.color.substr(0, 2), 16);
-	var green = parseInt(game.dot.color.substr(2, 2), 16);
-	var blue = parseInt(game.dot.color.substr(4, 2), 16);
+	var rgb = "50,225,50,";
 	
 	// Fill in the dot on the grid with a transparency based off of the dot's current value and
 	//	the amount of time it has left in the stage. Should give a clean fading animation to the dot.
-	context.fillStyle = 'rgba(' + red + ', ' + green + ', ' + blue + ', ' + 
+	context.fillStyle = 'rgba(' + rgb + 
 		(game.dot.value + game.dot.timeToLiveThisStage/game.dot.timePerStage)/(game.dot.maxValue + 1) + ')';		
 	context.fillRect(game.grid.offsetX + game.dot.x * game.grid.size + .5, 
 		game.grid.offsetY + game.dot.y * game.grid.size + .5, 
@@ -291,6 +297,42 @@ function drawDot(context) {
 		game.dot.timeToLiveThisStage = game.dot.timePerStage;
 	}
 }
+
+function makeRandomDots() {
+	var position = getUnusedPosition();
+	
+	game.dot.x = position.x;
+	game.dot.y = position.y;
+
+	game.dot.color = DOT_COLORS[0];
+	game.dot.timeToLiveThisStage = game.dot.timePerStage;
+	game.dot.value = game.dot.maxValue;
+	game.dot.exists = true;
+}
+
+// function drawPickups(context) {
+// 	var dot = makeRandomPowerup();
+// 	console.log(dot);
+// 	if (dot[0] == -1)
+// 		return;
+// 	context.fillStyle = DOT_COLORS[Math.random() % DOT_COLORS.length];
+// 	context.fillRect(dot[0],dot[1],game.grid.size,game.grid.size);
+// }
+
+// function makeRandomPowerup() {
+// 	if(Math.random() % 3 != 0) 
+// 		return [-1,-1];
+
+// 	var position = getUnusedPosition();
+
+// 	var dot = new Object;
+// 	dot.x = position.x;
+// 	dot.y = position.y;
+// 	dot.exists = true;
+// 	//dot.powerup = POWERUPS[Math.random() % 5];
+// 	game.dots.push(dot);
+// 	return [dot.x,dot.y];
+// }
 
 function drawText(context) {
 	if(worm.direction != 'none') {
@@ -359,36 +401,6 @@ function resetBoard() {
 	worm.position.x = 1 + Math.floor(Math.random()*(game.grid.width/game.grid.size - 2));
 	worm.position.y = 1 + Math.floor(Math.random()*(game.grid.height/game.grid.size - 2));	
 }
-
-function makeRandomDot() {
-	makeRandomPowerup();
-	var position = getUnusedPosition();
-	
-	game.dot.x = position.x;
-	game.dot.y = position.y;
-
-	game.dot.color = DOT_COLORS[0];
-	game.dot.timeToLiveThisStage = game.dot.timePerStage;
-	game.dot.value = game.dot.maxValue;
-	game.dot.exists = true;
-}
-
-function makeRandomPowerup() {
-	
-	if(Math.random % 5 != 0) 
-		return;
-
-	var position = getUnusedPosition();
-
-	var dot = new Object;
-	dot.x = position.x;
-	dot.y = position.y;
-	dot.exists = true;
-	dot.powerup = POWERUPS[Math.random() % 5];
-
-	dots.push(dot);
-}
-
 
 function getUnusedPosition() {
 	var positionInWorm = true;
