@@ -21,11 +21,11 @@ var SHRINK_ACTION = function() {
 	worm.length = Math.max(1, Math.floor(worm.length / 2));
 };
 
-var GROW_ACTION = function() {
-	worm.length = Math.floor(worm.length * 1.5)  % worm.maxSize;
+var GROW_ACTION = function(player) {
+	worms[player].length = Math.floor(worms[player].length * 1.5)  % worm.maxSize;
 };
 
-var SLOW_TIME_ACTION = function() {
+var SLOW_TIME_ACTION = function(player) {
 	originalSpeed = game.speed;
 	game.speed = originalSpeed * 2;
 	clearInterval(game.updateBoardIntervalId);
@@ -40,13 +40,13 @@ var SLOW_TIME_ACTION = function() {
 
 var isFoodOut = false;
 
-var BOMB_ACTION = function() {
+var BOMB_ACTION = function(player) {
 	resetBoard();
 };
 
-var PORTAL_ACTION = function() {
-	worm.position.x = getRandomX();
-	worm.position.y = getRandomY();
+var PORTAL_ACTION = function(player) {
+	worms[player].position.x = getRandomX();
+	worms[player].position.y = getRandomY();
 };
 
 var ITEMS_ACTIONS = Array(FOOD_ACTION, SHRINK_ACTION, GROW_ACTION, SLOW_TIME_ACTION, BOMB_ACTION, PORTAL_ACTION);
@@ -139,7 +139,7 @@ function init() {
 
 	
 	// Add key event listener
-	window.addEventListener('keydown', wormKeyHit, false);
+	window.addEventListener('keydown', wormOneKeyHit, false);
 	window.addEventListener('keydown',wormTwoKeyHit, false);
 	
 	game.updateBoardIntervalId = setInterval('updateBoard()', game.speed);
@@ -197,7 +197,7 @@ function updateBoard() {
 		}
 
 		drawWorm(game.context,i);
-		collideDots();
+		collideDots(i);
 		
 		if(worms[i].direction != 'none') {
 			if(isFoodOut) {
@@ -207,7 +207,7 @@ function updateBoard() {
 			}
 		}
 
-		if(worms[i].direction != 'none' && collision()) {
+		if(worms[i].direction != 'none' && collision(i)) {
 			resetBoard();
 		}
 	}	
@@ -219,12 +219,12 @@ function updateBoard() {
 	drawText(game.context);
 }
 
-function collideDots() {
+function collideDots(player) {
 	for(var i = 0; i < game.dots.length; i++) {
 		var dot = game.dots[i];
-		
-		if(dot.x == worm.position.x && dot.y == worm.position.y) {
-			dot['type']();
+
+		if(dot.x == worms[player].position.x && dot.y == worms[player].position.y) {
+			dot['type'](i);
 			game.dots.splice(i,1);
 			return;
 		}
@@ -318,27 +318,27 @@ function drawGrid(context) {
 	context.stroke();
 }
 
-function drawWorm(context) {
+function drawWorm(context, player) {
 	// Draw the head-end dot of the worm (always visible)
 	context.fillStyle = '#000000';
-	context.fillRect(game.grid.offsetX + worm.position.x * game.grid.size - .5, 
-		game.grid.offsetY + worm.position.y * game.grid.size + .5, 
+	context.fillRect(game.grid.offsetX + worms[player].position.x * game.grid.size - .5, 
+		game.grid.offsetY + worms[player].position.y * game.grid.size + .5, 
 		game.grid.size + 1, game.grid.size + 1);
 	
 	// If the worm is longer than one block
-	if(worm.length > 1) {
+	if(worms[player].length > 1) {
 		// If the worm's length is greater than the maximum size, trim it back down to the maximum size
-		if(worm.length > worm.maxSize){
-			worm.length = worm.maxSize;
+		if(worms[player].length > worms[player].maxSize){
+			worms[player].length = worms[player].maxSize;
 		}
 		
 		// For each of the rest of the blocks in the worm's tail
-		for(var n = worm.length - 1; n != 0; n--) {
+		for(var n = worms[player].length - 1; n != 0; n--) {
 			// Do some math magic to create a gradient for the tail
-			context.fillStyle = 'rgb(' + Math.floor(0x00/worm.length * n) + ', ' + 
-				Math.floor(0xbb/worm.length * n) + ', ' + Math.floor(0x00/worm.length * n) + ')';
-			context.fillRect(game.grid.offsetX + worm.previousCells[worm.previousCells.length-n].x * game.grid.size - .5, 
-				game.grid.offsetY + worm.previousCells[worm.previousCells.length-n].y * game.grid.size + .5, 
+			context.fillStyle = 'rgb(' + Math.floor(0x00/worms[player].length * n) + ', ' + 
+				Math.floor(0xbb/worms[player].length * n) + ', ' + Math.floor(0x00/worms[player].length * n) + ')';
+			context.fillRect(game.grid.offsetX + worms[player].previousCells[worms[player].previousCells.length-n].x * game.grid.size - .5, 
+				game.grid.offsetY + worms[player].previousCells[worms[player].previousCells.length-n].y * game.grid.size + .5, 
 				game.grid.size + 1, game.grid.size + 1);
 		}
 	}
@@ -447,14 +447,17 @@ function retrieveHighScore(score) {
 	}
 }
 
-// Returns true if the worm has collided with itself
+// Returns true if the worm has collided with itself or the other worm
 function collision() {
-	for(var n = 0; n != worm.length - 1; n++) {
-		if(worm.position.x == worm.previousCells[worm.previousCells.length - n - 1].x &&
-			worm.position.y == worm.previousCells[worm.previousCells.length - n - 1].y) {
-			return true;
+	for (var i = 0; i < 2; i++) {
+		for(var n = 0; n != worms[i].length - 1; n++) {
+			if(worms[player].position.x == worms[i].previousCells[worms[i].previousCells.length - n - 1].x &&
+				worms[player].position.y == worms[i].previousCells[worms[i].previousCells.length - n - 1].y) {
+				return true;
+			}
 		}
 	}
+
 	
 	return false;
 }
@@ -465,17 +468,19 @@ function resetBoard() {
 	game.score = 0;
 	game.dot.exists = false;
 
-	worm.direction = "none";
-	worm.previousCells = new Array();
-	worm.length = 1;
-	worm.movedThisTurn = false; 
-	worm.cachedMove = 'none';
+	for (var i = 0; i < 2; i++) {
+		worms[i].direction = "none";
+		worms[i].previousCells = new Array();
+		worms[i].length = 1;
+		worms[i].movedThisTurn = false; 
+		worms[i].cachedMove = 'none';
 
-	game.dots = new Array();
-	isFoodOut = false;
-	
-	worm.position.x = 1 + Math.floor(Math.random()*(game.grid.width/game.grid.size - 2));
-	worm.position.y = 1 + Math.floor(Math.random()*(game.grid.height/game.grid.size - 2));	
+		game.dots = new Array();
+		isFoodOut = false;
+		
+		worms[i].position.x = 1 + Math.floor(Math.random()*(game.grid.width/game.grid.size - 2));
+		worms[i].position.y = 1 + Math.floor(Math.random()*(game.grid.height/game.grid.size - 2));
+	}	
 }
 
 function getUnusedPosition() {
@@ -488,11 +493,13 @@ function getUnusedPosition() {
 		};
 		positionInWorm = false;
 
-		var lastCellInWorm = worm.previousCells.length - worm.length;
-		for(var i = worm.previousCells.length - 1; i > lastCellInWorm; --i) {
-			if(position.x == worm.previousCells[i].x && position.y == worm.previousCells[i].y) {
-				positionInWorm = true;
-				break;
+		for (var j = 0; j < 2; j++) {
+			var lastCellInWorm = worms[j].previousCells.length - worms[j].length;
+			for(var i = worms[j].previousCells.length - 1; i > lastCellInWorm; --i) {
+				if(position.x == worms[j].previousCells[i].x && position.y == worms[j].previousCells[i].y) {
+					positionInWorm = true;
+					break;
+				}
 			}
 		}
 	}
@@ -500,16 +507,16 @@ function getUnusedPosition() {
 	return position;
 }
 
-function wormKeyHit(e) {
+function wormOneKeyHit(e) {
 	switch(e.keyCode) {
 		// left key
 		case 37:
-			if(worm.direction != 'right') {
-				if(!worm.movedThisTurn) {
-					worm.direction = 'left';
-					worm.movedThisTurn = true;
-				} else if(worm.cachedMove == 'none') {
-					worm.cachedMove = 'left';
+			if(worms[0].direction != 'right') {
+				if(!worms[0].movedThisTurn) {
+					worms[0].direction = 'left';
+					worms[0].movedThisTurn = true;
+				} else if(worms[0].cachedMove == 'none') {
+					worms[0].cachedMove = 'left';
 				}
 			}
 			
@@ -517,61 +524,61 @@ function wormKeyHit(e) {
 			
 		// up key
 		case 38:
-			if(worm.direction != 'down') {
-				if(!worm.movedThisTurn) {
-					worm.direction = 'up';
-					worm.movedThisTurn = true;
-				} else if(worm.cachedMove == 'none') {
-					worm.cachedMove = 'up';
+			if(worms[0].direction != 'down') {
+				if(!worms[0].movedThisTurn) {
+					worms[0].direction = 'up';
+					worms[0].movedThisTurn = true;
+				} else if(worms[0].cachedMove == 'none') {
+					worms[0].cachedMove = 'up';
 				}
 			}
 			break;
 			
 		// right key
 		case 39:
-			if(worm.direction != 'left') {
-				if(!worm.movedThisTurn) {
-					worm.direction = 'right';
-					worm.movedThisTurn = true;
-				} else if(worm.cachedMove == 'none') {
-					worm.cachedMove = 'right';
+			if(worms[0].direction != 'left') {
+				if(!worms[0].movedThisTurn) {
+					worms[0].direction = 'right';
+					worms[0].movedThisTurn = true;
+				} else if(worms[0].cachedMove == 'none') {
+					worms[0].cachedMove = 'right';
 				}
 			}
 			break;
 			
 		// down key
 		case 40:
-			if(worm.direction != 'up') {
-				if(!worm.movedThisTurn) {
-					worm.direction = 'down';
-					worm.movedThisTurn = true;
-				} else if(worm.cachedMove == 'none') {
-					worm.cachedMove = 'down';
+			if(worms[0].direction != 'up') {
+				if(!worms[0].movedThisTurn) {
+					worms[0].direction = 'down';
+					worms[0].movedThisTurn = true;
+				} else if(worms[0].cachedMove == 'none') {
+					worms[0].cachedMove = 'down';
 				}
 			}
 			break;
 			
 		// 'g' key
 		case 71:
-			if(worm.direction != 'none')
-				worm.length += 1;
+			if(worms[0].direction != 'none')
+				worms[0].length += 1;
 			break;
-
+/*
 		// 'd' key
 		case 68:
-			if(worm.direction != 'none')
+			if(worms[0].direction != 'none')
 				makeRandomDot();
 			break;
-			
+*/			
 		// 'p' key
 		case 80:
-			if(worm.paused) {
-				worm.updateBoardIntervalId = setInterval('updateBoard()', game.speed);
+			if(worms[0].paused) {
+				worms[0].updateBoardIntervalId = setInterval('updateBoard()', game.speed);
 			} else {
-				clearInterval(worm.updateBoardIntervalId);
+				clearInterval(worms[0].updateBoardIntervalId);
 			}
 			
-			worm.paused = !worm.paused;
+			worms[0].paused = !worms[0].paused;
 			
 			break;
 			
