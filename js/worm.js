@@ -580,6 +580,84 @@ function wormKeyHit(e) {
 	return false;
 }
 
+function wormTwoKeyHit(e) {
+	switch(e.keyCode) {
+		// left key
+		case 65:
+			if(worms[1].direction != 'right') {
+				if(!worms[1].movedThisTurn) {
+					worms[1].direction = 'left';
+					worms[1].movedThisTurn = true;
+				} else if(worms[1].cachedMove == 'none') {
+					worms[1].cachedMove = 'left';
+				}
+			}
+			
+			break;
+			
+		// up key
+		case 87:
+			if(worms[1].direction != 'down') {
+				if(!worms[1].movedThisTurn) {
+					worms[1].direction = 'up';
+					worms[1].movedThisTurn = true;
+				} else if(worms[1].cachedMove == 'none') {
+					worms[1].cachedMove = 'up';
+				}
+			}
+			break;
+			
+		// right key
+		case 68:
+			if(worms[1].direction != 'left') {
+				if(!worms[1].movedThisTurn) {
+					worms[1].direction = 'right';
+					worms[1].movedThisTurn = true;
+				} else if(worms[1].cachedMove == 'none') {
+					worms[1].cachedMove = 'right';
+				}
+			}
+			break;
+			
+		// down key
+		case 83:
+			if(worms[1].direction != 'up') {
+				if(!worms[1].movedThisTurn) {
+					worms[1].direction = 'down';
+					worms[1].movedThisTurn = true;
+				} else if(worms[1].cachedMove == 'none') {
+					worms[1].cachedMove = 'down';
+				}
+			}
+			break;
+			
+		// 'g' key
+		case 71:
+			if(worms[1].direction != 'none')
+				worms[1].length += 1;
+			break;
+
+		// 'p' key
+		case 80:
+			if(worms[1].paused) {
+				worms[1].updateBoardIntervalId = setInterval('updateBoard()', game.speed);
+			} else {
+				clearInterval(worms[1].updateBoardIntervalId);
+			}
+			
+			worms[1].paused = !worms[1].paused;
+			
+			break;
+			
+		// '\' key
+		case 220:
+			setHighScore(0);
+			resetBoard();
+	}
+	
+	return false;
+}
+
 // Returns true if localStorage is present in the browser (source: http://bit.ly/cOSABP)			
 function supportsLocalStorage() {
 	try { 
