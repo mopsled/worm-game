@@ -1,5 +1,6 @@
 var game = new Object();
 var worm = new Object();
+var worms = Array(new Object(), new Object());
 
 var LOCAL_STORAGE_VERSION = 'version';
 var LOCAL_STORAGE_HIGH_SCORE = 'highScore';
@@ -95,7 +96,15 @@ function init() {
 	worm.movedThisTurn = false;
 	worm.cachedMove = 'none';
 	worm.maxSize = 100;
-	
+
+	for (var i = 0; i < 2; i++) {
+		worms[i].direction = 'none';
+		worms[i].previousCells = new Array();
+		worms[i].length = 1;
+		worms[i].movedThisTurn = false;
+		worms[i].cachedMove = 'none';
+		worms[i].maxSize = 100;
+	}
 	
 	
 	// Grid properties: game.grid
@@ -131,9 +140,17 @@ function init() {
 	worm.position = new Object();
 	worm.position.x = getRandomX();
 	worm.position.y = getRandomY();
+
+	for (var i = 0; i < 2; i++) {
+		worms[i].position = new Object();
+		worms[i].position.x = getRandomX();
+		worms[i].position.y = getRandomY();
+	}
+
 	
 	// Add key event listener
 	window.addEventListener('keydown', wormKeyHit, false);
+	window.addEventListener('keydown',wormTwoKeyHit, false);
 	
 	game.updateBoardIntervalId = setInterval('updateBoard()', game.speed);
 }
