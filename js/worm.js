@@ -90,13 +90,6 @@ function init() {
 	game.score = 0;
 	game.highScore = retrieveHighScore();
 
-	worm.direction = 'none';
-	worm.previousCells = new Array();
-	worm.length = 1;
-	worm.movedThisTurn = false;
-	worm.cachedMove = 'none';
-	worm.maxSize = 100;
-
 	for (var i = 0; i < 2; i++) {
 		worms[i].direction = 'none';
 		worms[i].previousCells = new Array();
@@ -137,9 +130,6 @@ function init() {
 
 	// Position properties: worm.position
 	//	.x, .y - the current x and y position (in grid value, not pixel value) of the worm
-	worm.position = new Object();
-	worm.position.x = getRandomX();
-	worm.position.y = getRandomY();
 
 	for (var i = 0; i < 2; i++) {
 		worms[i].position = new Object();
