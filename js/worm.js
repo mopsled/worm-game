@@ -167,45 +167,59 @@ function getRandomY() {
 function updateBoard() {
 	resetCanvas(game.canvas);
 	drawGrid(game.context);
-	
-	// If the worm is currently playing, add its current position to previousCells
-	if(worm.direction != 'none') {
-		position = new Object();
-		position.x = worm.position.x;
-		position.y = worm.position.y;
-		worm.previousCells.push(position);
+
+	for (var i = 0; i < 2; i++) {
+		// If the worm is currently playing, add its current position to previousCells
+		if(worms[i].direction != 'none') {
+			position = new Object();
+			position.x = worms[i].position.x;
+			position.y = worms[i].position.y;
+			worms[i].previousCells.push(position);
+			
+			// Keep previousCells.length to a maximum size of worm.maxSize
+			while(worms[i].previousCells.length > worms[i].maxSize) {
+				worms[i].previousCells.shift();
+			}
+		}
+
+		if (worms[i].direction != 'none') {
+			position = new Object();
+			position.x = worms[i].position.x;
+			position.y = worms[i].position.y;
+			worms[i].previousCells.push(position);
+			
+			// Keep previousCells.length to a maximum size of worm.maxSize
+			while(worms[i].previousCells.length > worms[i].maxSize) {
+				worms[i].previousCells.shift();
+			}
+		}
+
+		moveWorm(i);
 		
-		// Keep previousCells.length to a maximum size of worm.maxSize
-		while(worm.previousCells.length > worm.maxSize) {
-			worm.previousCells.shift();
+		// If the worm's position lies outside of the board, reset the board
+		var lessThanX = worms[i].position.x < 0;
+		var lessThanY = worms[i].position.y < 0;
+		var greaterThanx = worms[i].position.x > (game.grid.width/game.grid.size - 1);
+		var greaterThanY = worms[i].position.y > (game.grid.height/game.grid.size - 1)
+
+		if(lessThanX || lessThanY || greaterThanx || greaterThanY) {
+			resetBoard();
 		}
-	}
 
-	moveWorm();
-	
-	// If the worm's position lies outside of the board, reset the board
-	var lessThanX = worm.position.x < 0;
-	var lessThanY = worm.position.y < 0;
-	var greaterThanx = worm.position.x > (game.grid.width/game.grid.size - 1);
-	var greaterThanY = worm.position.y > (game.grid.height/game.grid.size - 1)
-
-	if(lessThanX || lessThanY || greaterThanx || greaterThanY) {
-		resetBoard();
-	}
-
-	drawWorm(game.context);
-	collideDots();
-	
-	if(worm.direction != 'none') {
-		if(isFoodOut) {
-			drawDots(game.context);
-		} else {
-			makeRandomDots();
+		drawWorm(game.context,i);
+		collideDots();
+		
+		if(worms[i].direction != 'none') {
+			if(isFoodOut) {
+				drawDots(game.context);
+			} else {
+				makeRandomDots();
+			}
 		}
-	}
 
-	if(worm.direction != 'none' && collision()) {
-		resetBoard();
+		if(worms[i].direction != 'none' && collision()) {
+			resetBoard();
+		}
 	}	
 	
 	if(game.score > game.highScore) {
@@ -227,7 +241,7 @@ function collideDots() {
 	}
 }
 
-function moveWorm() {
+function moveWorm(player) {
 	// For each of the four directions, follow this logic:
 	//	change the worm's coordinates
 	//	mark the worm as not having moved
@@ -236,59 +250,59 @@ function moveWorm() {
 	//			queue the cached move as the next move for the worm
 	//		otherwise:
 	//			remove cached move
-	if(worm.direction == 'left') {
-		worm.position.x = worm.position.x - 1;
-		worm.movedThisTurn = false;
+	if(worms[player].direction == 'left') {
+		worms[player].position.x = worms[player].position.x - 1;
+		worms[player].movedThisTurn = false;
 		
-		if(worm.cachedMove != 'none') {
-			if(worm.cachedMove != 'right') {
-				worm.direction = worm.cachedMove;
-				worm.cachedMove = 'none';
-				worm.movedThisTurn = 'true';
+		if(worms[player].cachedMove != 'none') {
+			if(worms[player].cachedMove != 'right') {
+				worms[player].direction = worms[player].cachedMove;
+				worms[player].cachedMove = 'none';
+				worms[player].movedThisTurn = 'true';
 			} else {
-				worm.cachedMove = 'none';
+				worms[player].cachedMove = 'none';
 			}
 		}
 		
-	} else if(worm.direction == 'right') {
-		worm.position.x = worm.position.x + 1;
-		worm.movedThisTurn = false;
+	} else if(worms[player].direction == 'right') {
+		worms[player].position.x = worms[player].position.x + 1;
+		worms[player].movedThisTurn = false;
 		
-		if(worm.cachedMove != 'none') {
-			if(worm.cachedMove != 'left') {
-				worm.direction = worm.cachedMove;
-				worm.cachedMove = 'none';
-				worm.movedThisTurn = 'true';
+		if(worms[player].cachedMove != 'none') {
+			if(worms[player].cachedMove != 'left') {
+				worms[player].direction = worms[player].cachedMove;
+				worms[player].cachedMove = 'none';
+				worms[player].movedThisTurn = 'true';
 			} else {
-				worm.cachedMove = 'none';
+				worms[player].cachedMove = 'none';
 			}
 		}
 		
-	} else if(worm.direction == 'up') {
-		worm.position.y = worm.position.y - 1;
-		worm.movedThisTurn = false;
+	} else if(worms[player].direction == 'up') {
+		worms[player].position.y = worms[player].position.y - 1;
+		worms[player].movedThisTurn = false;
 		
-		if(worm.cachedMove != 'none') {
-			if(worm.cachedMove != 'down') {
-				worm.direction = worm.cachedMove;
-				worm.cachedMove = 'none';
-				worm.movedThisTurn = 'true';
+		if(worms[player].cachedMove != 'none') {
+			if(worms[player].cachedMove != 'down') {
+				worms[player].direction = worms[player].cachedMove;
+				worms[player].cachedMove = 'none';
+				worms[player].movedThisTurn = 'true';
 			} else {
-				worm.cachedMove = 'none';
+				worms[player].cachedMove = 'none';
 			}
 		}
 		
-	} else if(worm.direction == 'down') {
-		worm.position.y = worm.position.y + 1;
-		worm.movedThisTurn = false;
+	} else if(worms[player].direction == 'down') {
+		worms[player].position.y = worms[player].position.y + 1;
+		worms[player].movedThisTurn = false;
 		
-		if(worm.cachedMove != 'none') {
-			if(worm.cachedMove != 'up') {
-				worm.direction = worm.cachedMove;
-				worm.cachedMove = 'none';
-				worm.movedThisTurn = 'true';
+		if(worms[player].cachedMove != 'none') {
+			if(worms[player].cachedMove != 'up') {
+				worms[player].direction = worms[player].cachedMove;
+				worms[player].cachedMove = 'none';
+				worms[player].movedThisTurn = 'true';
 			} else {
-				worm.cachedMove = 'none';
+				worms[player].cachedMove = 'none';
 			}
 		}
 	}
