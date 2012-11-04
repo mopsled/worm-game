@@ -360,10 +360,14 @@ function drawDots(context) {
 }
 
 function drawDot(dot,color,context) {
-	// Fill in the dot on the grid with a transparency based off of the dot's current value and
-	//	the amount of time it has left in the stage. Should give a clean fading animation to the dot.
-	context.fillStyle = 'rgba(' + color.red + ', ' + color.green + ', ' + color.blue + ', ' + 
-		(dot.value + dot.timeToLiveThisStage/game.dot.timePerStage)/(game.dot.maxValue + 1) + ')';	
+	var alpha;
+	if (dot.type == FOOD_ACTION) {
+		alpha = (dot.value + dot.timeToLiveThisStage/game.dot.timePerStage)/(game.dot.maxValue + 1);
+	} else {
+		alpha = .6;
+	}
+
+	context.fillStyle = 'rgba(' + color.red + ', ' + color.green + ', ' + color.blue + ', ' + alpha + ')';	
 	context.fillRect(game.grid.offsetX + dot.x * game.grid.size + .5, 
 					 game.grid.offsetY + dot.y * game.grid.size + .5, 
 					 game.grid.size, game.grid.size);
