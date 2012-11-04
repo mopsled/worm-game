@@ -13,9 +13,20 @@ var ITEMS = Array('FOOD', 'SHRINK', 'GROW', 'SLOW_TIME', 'BOMB', 'PORTAL');
 
 var FOOD_ACTION = function(player, value) {
 	worms[player].length = (worms[player].length + 1);
-	game.score += 
 
-	isFoodOut = false;
+	var dotScore = -1;
+	for (var i = 0; i != game.dots.length; ++i) {
+		if (game.dots[i].type == FOOD_ACTION) {
+			dotScore = game.dots[i].value;
+			break;
+		}
+	}
+
+	if(dotScore >= 0) {
+		game.score += dotScore;
+	}
+
+	game.foodOut = false;
 };
 
 var SHRINK_ACTION = function(player) {
@@ -26,7 +37,7 @@ var GROW_ACTION = function(player) {
 	worms[player].length = Math.floor(worms[player].length * 1.5)  % worms[player].maxSize;
 };
 
-var SLOW_TIME_ACTION = function() {
+var SLOW_TIME_ACTION = function(player) {
 	originalSpeed = game.speed;
 	game.speed = originalSpeed * 2;
 	clearInterval(game.updateBoardIntervalId);
@@ -39,15 +50,13 @@ var SLOW_TIME_ACTION = function() {
 	}, 3000);
 };
 
-var isFoodOut = false;
-
-var BOMB_ACTION = function() {
+var BOMB_ACTION = function(player) {
 	resetBoard();
 };
 
-var PORTAL_ACTION = function() {
-	worms[0].position.x = getRandomX();
-	worms[0].position.y = getRandomY();
+var PORTAL_ACTION = function(player) {
+	worms[player].position.x = getRandomX();
+	worms[player].position.y = getRandomY();
 };
 
 var ITEMS_ACTIONS = Array(FOOD_ACTION, SHRINK_ACTION, GROW_ACTION, SLOW_TIME_ACTION, BOMB_ACTION, PORTAL_ACTION);
@@ -62,13 +71,13 @@ function init() {
 	//	.speed - the number of milliseconds for each frame. Lower value = faster fame
 	//	.paused - holds true value if the game is paused. A paused game will not update the grid
 	//	.score - the point value that the game is currently at (used for 'score:')
-	//	.score - the max point value for the gam ever
 	//	.highScore - the maximum score acheived. This is stored in localStorage, if possible
 	//	.updateBoardIntervalId - the interval id of the updateBoard()'s setInterval. This is
 	//		used to stop and start the repeated updating of the board if the game is paused
 	//		and restarted
 	//	.grid - Holds the size and shape properties of the grid (more below)
 	//	.dot - Holds dot properies, such as point value and location (more below)
+	//	.foodOut - boolean holding true when a food square is on the board
 
 	// worm properties:
 	//	.direction - a variable that holds the direction the worm is currently moving in:
@@ -178,23 +187,15 @@ function updateBoard() {
 		// If the worm's position lies outside of the board, reset the board
 		var lessThanX = worms[i].position.x < 0;
 		var lessThanY = worms[i].position.y < 0;
-		var greaterThanx = worms[i].position.x > (game.grid.width/game.grid.size - 1);
+		var greaterThanX = worms[i].position.x > (game.grid.width/game.grid.size - 1);
 		var greaterThanY = worms[i].position.y > (game.grid.height/game.grid.size - 1)
 
-		if(lessThanX || lessThanY || greaterThanx || greaterThanY) {
+		if(lessThanX || lessThanY || greaterThanX || greaterThanY) {
 			resetBoard();
 		}
 
 		drawWorm(game.context,i);
 		collideDots(i);
-		
-		if(worms[i].direction != 'none') {
-			if(isFoodOut) {
-				drawDots(game.context);
-			} else {
-				makeRandomDots();
-			}
-		}
 
 		if(worms[i].direction != 'none' && collision(i)) {
 			resetBoard();
@@ -203,6 +204,16 @@ function updateBoard() {
 	
 		if(game.score > game.highScore) {
 			setHighScore(game.score);
+		}
+	}
+
+	var bothWormsMoving = worms[0].direction != 'none' && worms[1].direction != 'none';
+
+	if(bothWormsMoving) {
+		if(game.foodOut) {
+			drawDots(game.context);
+		} else {
+			makeRandomDots();
 		}
 	}
 
@@ -380,7 +391,7 @@ function makeRandomDots() {
 	dot.type = ITEMS_ACTIONS[0];
 	dot.exists = true;
 	game.dots.push(dot);
-	isFoodOut = true;
+	game.foodOut = true;
 
 	var pickupType = Math.floor(Math.random()*ITEMS.length);
 	if (pickupType != 0 && Math.random() > 0.6) {
@@ -482,7 +493,7 @@ function resetBoard() {
 		worms[i].cachedMove = 'none';
 
 		game.dots = new Array();
-		isFoodOut = false;
+		game.foodOut = false;
 		
 		worms[i].position.x = 1 + Math.floor(Math.random()*(game.grid.width/game.grid.size - 2));
 		worms[i].position.y = 1 + Math.floor(Math.random()*(game.grid.height/game.grid.size - 2));
@@ -571,7 +582,7 @@ function wormOneKeyHit(e) {
 
 function wormTwoKeyHit(e) {
 	switch(e.keyCode) {
-		// left key
+		// a key (up)
 		case 65:
 			if(worms[1].direction != 'right') {
 				if(!worms[1].movedThisTurn) {
@@ -584,7 +595,7 @@ function wormTwoKeyHit(e) {
 			
 			break;
 			
-		// up key
+		// w key (left)
 		case 87:
 			if(worms[1].direction != 'down') {
 				if(!worms[1].movedThisTurn) {
@@ -596,7 +607,7 @@ function wormTwoKeyHit(e) {
 			}
 			break;
 			
-		// right key
+		// d key (right)
 		case 68:
 			if(worms[1].direction != 'left') {
 				if(!worms[1].movedThisTurn) {
@@ -608,7 +619,7 @@ function wormTwoKeyHit(e) {
 			}
 			break;
 			
-		// down key
+		// s key (down)
 		case 83:
 			if(worms[1].direction != 'up') {
 				if(!worms[1].movedThisTurn) {
