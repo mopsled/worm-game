@@ -1,5 +1,5 @@
 var game = new Object();
-var worm = new Object();
+//var worm = new Object();
 var worms = Array(new Object(), new Object());
 
 var LOCAL_STORAGE_VERSION = 'version';
@@ -12,20 +12,21 @@ var DOT_COLORS = Array('88A825', '345BC1', 'ED8C2B', 'C1BC36', 'CF4A39', '51386E
 
 var ITEMS = Array('FOOD', 'SHRINK', 'GROW', 'SLOW_TIME', 'BOMB', 'PORTAL');
 
-var FOOD_ACTION = function() {
-	worm.length = (worm.length + 1);
+var FOOD_ACTION = function(player) {
+	worms[player].length = (worms[player].length + 1);
+
 	isFoodOut = false;
 };
 
-var SHRINK_ACTION = function() {
-	worm.length = Math.max(1, Math.floor(worm.length / 2));
+var SHRINK_ACTION = function(player) {
+	worms[player].length = Math.max(1, Math.floor(worms[player].length / 2));
 };
 
 var GROW_ACTION = function(player) {
-	worms[player].length = Math.floor(worms[player].length * 1.5)  % worm.maxSize;
+	worms[player].length = Math.floor(worms[player].length * 1.5)  % worms[player].maxSize;
 };
 
-var SLOW_TIME_ACTION = function(player) {
+var SLOW_TIME_ACTION = function() {
 	originalSpeed = game.speed;
 	game.speed = originalSpeed * 2;
 	clearInterval(game.updateBoardIntervalId);
@@ -40,13 +41,13 @@ var SLOW_TIME_ACTION = function(player) {
 
 var isFoodOut = false;
 
-var BOMB_ACTION = function(player) {
+var BOMB_ACTION = function() {
 	resetBoard();
 };
 
-var PORTAL_ACTION = function(player) {
-	worms[player].position.x = getRandomX();
-	worms[player].position.y = getRandomY();
+var PORTAL_ACTION = function() {
+	worms[0].position.x = getRandomX();
+	worms[0].position.y = getRandomY();
 };
 
 var ITEMS_ACTIONS = Array(FOOD_ACTION, SHRINK_ACTION, GROW_ACTION, SLOW_TIME_ACTION, BOMB_ACTION, PORTAL_ACTION);
@@ -172,18 +173,6 @@ function updateBoard() {
 			}
 		}
 
-		if (worms[i].direction != 'none') {
-			position = new Object();
-			position.x = worms[i].position.x;
-			position.y = worms[i].position.y;
-			worms[i].previousCells.push(position);
-			
-			// Keep previousCells.length to a maximum size of worm.maxSize
-			while(worms[i].previousCells.length > worms[i].maxSize) {
-				worms[i].previousCells.shift();
-			}
-		}
-
 		moveWorm(i);
 		
 		// If the worm's position lies outside of the board, reset the board
@@ -210,13 +199,14 @@ function updateBoard() {
 		if(worms[i].direction != 'none' && collision(i)) {
 			resetBoard();
 		}
-	}	
+		
 	
-	if(game.score > game.highScore) {
-		setHighScore(game.score);
-	}
+		if(game.score > game.highScore) {
+			setHighScore(game.score);
+		}
 
-	drawText(game.context);
+		drawText(game.context,i);
+	}
 }
 
 function collideDots(player) {
@@ -224,7 +214,7 @@ function collideDots(player) {
 		var dot = game.dots[i];
 
 		if(dot.x == worms[player].position.x && dot.y == worms[player].position.y) {
-			dot['type'](i);
+			dot['type'](player);
 			game.dots.splice(i,1);
 			return;
 		}
@@ -407,8 +397,8 @@ function makeRandomDots() {
 	}
 }
 
-function drawText(context) {
-	if(worm.direction != 'none') {
+function drawText(context, player) {
+	if(worms[player].direction != 'none') {
 		context.fillStyle = '#000';
 		context.font = "20px Georgia";
 		context.textAlign = "right"
@@ -448,10 +438,18 @@ function retrieveHighScore(score) {
 }
 
 // Returns true if the worm has collided with itself or the other worm
-function collision() {
+function collision(player) {
+	var otherPlayer = (player +  1) % 2;
+
+	// if worm heads collide
+	if (worms[0].position.x == worms[1].position.x  &&
+		worms[0].position.y == worms[1].position.y) {
+		return true;
+	}
+
 	for (var i = 0; i < 2; i++) {
-		for(var n = 0; n != worms[i].length - 1; n++) {
-			if(worms[player].position.x == worms[i].previousCells[worms[i].previousCells.length - n - 1].x &&
+		for (var n = 0; n != worms[i].length - 1; n++) {
+			if (worms[player].position.x == worms[i].previousCells[worms[i].previousCells.length - n - 1].x &&
 				worms[player].position.y == worms[i].previousCells[worms[i].previousCells.length - n - 1].y) {
 				return true;
 			}
@@ -495,6 +493,7 @@ function getUnusedPosition() {
 
 		for (var j = 0; j < 2; j++) {
 			var lastCellInWorm = worms[j].previousCells.length - worms[j].length;
+
 			for(var i = worms[j].previousCells.length - 1; i > lastCellInWorm; --i) {
 				if(position.x == worms[j].previousCells[i].x && position.y == worms[j].previousCells[i].y) {
 					positionInWorm = true;
