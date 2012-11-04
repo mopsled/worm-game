@@ -3,21 +3,27 @@
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 		<title>Snake? Not really.</title>
+		<link rel="stylesheet" type="text/css" href="css/main.css">
+		<link href='http://fonts.googleapis.com/css?family=Josefin+Sans:100,400' rel='stylesheet' type='text/css'>
+		<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+
+		<link rel="stylesheet" href="js/highlight/styles/github.css">
+		<script src="js/highlight/highlight.pack.js"></script>
+		<script>hljs.initHighlightingOnLoad();</script>
 	</head>
 	<body>
 		<section>
-			<h1>Collaborative two-player item-driven snake</h1>
-			<p>We've taken the classic game of snake and updated it, adding a large number of features to make a challenging, innovative game. We've thrown aside imperative programming and created a beautifully simple system of functionally-defined items. We've implemented a variety of these items, including items that grow, shrink, destroy, slow, and even teleport each player's snake across the board. Even better, we've made new items incredibly easy to create. Just check out the code needed to create our portal object:</p>
-			<code>
-var PORTAL_ACTION = function(player) {<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;worms[player].position.x = getRandomX();<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;worms[player].position.y = getRandomY();<br/>
-};
-			</code>
-			<p>Also, we've changed the classical snake paradigm to a collaborative two-player game. Players must work together to coordinate collecting food, sharing items, and avoiding collision as they struggle for a high score.</p>
-			<p>Sound interesting? Check out the instructions, and then continue to our game.</p>
-			<h2>Thanks!</h2>
+			<h1>Collaborative two-player<br/>item-driven snake</h1>
+			<p>We've taken the classic game of snake and updated it, adding a large number of features to make a <strong>challenging, innovative</strong> game. We've thrown aside imperative programming and created a <strong>beautifully simple</strong> system of <strong>functionally-defined</strong> items. We've implemented a variety of these items, including items that <strong>grow, shrink, destroy, slow,</strong> and even <strong>teleport</strong> a player's snake across the board. Even better, we've made new items incredibly easy to create. Just check out the code needed to create a portal object, <strong>taken from our project:</strong></p>
+			<pre>
+<code class="javascript">57    var PORTAL_ACTION = function(player) {
+58    	worms[player].position.x = getRandomX();
+59    	worms[player].position.y = getRandomY();
+60    }</code></pre>
+			<p>Also, we've changed the classical snake paradigm to a <strong>collaborative</strong> two-player game. <strong>Players must work together</strong> to coordinate collecting food, sharing items, and avoiding collision as they struggle for a high score.</p>
+			<p>Sound interesting? Check out the <a href="">instructions</a>, and then continue to <a href="">our game</a>.</p>
 		</section>
 	</body>
 </html>
