@@ -210,11 +210,11 @@ function updateBoard() {
 	var bothWormsMoving = worms[0].direction != 'none' && worms[1].direction != 'none';
 
 	if(bothWormsMoving) {
-		if(game.foodOut) {
-			drawDots(game.context);
-		} else {
+		if(!game.foodOut) {
 			makeRandomDots();
 		}
+
+		drawDots(game.context);
 	}
 
 	drawText(game.context);
