@@ -11,8 +11,9 @@ var DOT_COLORS = Array('88A825', '345BC1', 'ED8C2B', 'C1BC36', 'CF4A39', '51386E
 
 var ITEMS = Array('FOOD', 'SHRINK', 'GROW', 'SLOW_TIME', 'BOMB', 'PORTAL');
 
-var FOOD_ACTION = function(player) {
+var FOOD_ACTION = function(player, value) {
 	worms[player].length = (worms[player].length + 1);
+	game.score += 
 
 	isFoodOut = false;
 };
@@ -136,11 +137,11 @@ function init() {
 		worms[i].position.x = getRandomX();
 		worms[i].position.y = getRandomY();
 	}
-
 	
 	// Add key event listener
 	window.addEventListener('keydown', wormOneKeyHit, false);
-	window.addEventListener('keydown',wormTwoKeyHit, false);
+	window.addEventListener('keydown', wormTwoKeyHit, false);
+	window.addEventListener('keydown', commonKeyHit, false);
 	
 	game.updateBoardIntervalId = setInterval('updateBoard()', game.speed);
 }
@@ -203,9 +204,9 @@ function updateBoard() {
 		if(game.score > game.highScore) {
 			setHighScore(game.score);
 		}
-
-		drawText(game.context,i);
 	}
+
+	drawText(game.context);
 }
 
 function collideDots(player) {
@@ -396,12 +397,20 @@ function makeRandomDots() {
 	}
 }
 
-function drawText(context, player) {
-	if(worms[player].direction != 'none') {
+function drawText(context) {
+	var dotScore = -1;
+	for (var i = 0; i != game.dots.length; ++i) {
+		if (game.dots[i].type == FOOD_ACTION) {
+			dotScore = game.dots[i].value;
+			break;
+		}
+	}
+
+	if(dotScore >= 0) {
 		context.fillStyle = '#000';
 		context.font = "20px Georgia";
 		context.textAlign = "right"
-		context.fillText("dot score: " + game.dot.value, game.canvas.width - game.grid.offsetX, 
+		context.fillText("dot score: " + dotScore, game.canvas.width - game.grid.offsetX, 
 			game.canvas.height - 60);
 	}
 	
@@ -555,29 +564,6 @@ function wormOneKeyHit(e) {
 				}
 			}
 			break;
-			
-		// 'g' key
-		case 71:
-			if(worms[0].direction != 'none')
-				worms[0].length += 1;
-			break;
-			
-		// 'p' key
-		case 80:
-			if(worms[0].paused) {
-				worms[0].updateBoardIntervalId = setInterval('updateBoard()', game.speed);
-			} else {
-				clearInterval(worms[0].updateBoardIntervalId);
-			}
-			
-			worms[0].paused = !worms[0].paused;
-			
-			break;
-			
-		// '\' key
-		case 220:
-			setHighScore(0);
-			resetBoard();
 	}
 	
 	return false;
@@ -633,22 +619,31 @@ function wormTwoKeyHit(e) {
 				}
 			}
 			break;
-			
+	}
+	
+	return false;
+}
+
+function commonKeyHit(e) {
+	switch(e.keyCode) {
 		// 'g' key
 		case 71:
-			if(worms[1].direction != 'none')
-				worms[1].length += 1;
+			for (var i = 0; i < 2; ++i) {
+				if(worms[i].direction != 'none') {
+					worms[i].length += 1;
+				}
+			}
 			break;
 
 		// 'p' key
 		case 80:
-			if(worms[1].paused) {
-				worms[1].updateBoardIntervalId = setInterval('updateBoard()', game.speed);
+			if(game.paused) {
+				game.updateBoardIntervalId = setInterval('updateBoard()', game.speed);
 			} else {
-				clearInterval(worms[1].updateBoardIntervalId);
+				clearInterval(game.updateBoardIntervalId);
 			}
 			
-			worms[1].paused = !worms[1].paused;
+			game.paused = !game.paused;
 			
 			break;
 			
