@@ -1,5 +1,4 @@
 var game = new Object();
-//var worm = new Object();
 var worms = Array(new Object(), new Object());
 
 var LOCAL_STORAGE_VERSION = 'version';
@@ -562,13 +561,7 @@ function wormOneKeyHit(e) {
 			if(worms[0].direction != 'none')
 				worms[0].length += 1;
 			break;
-/*
-		// 'd' key
-		case 68:
-			if(worms[0].direction != 'none')
-				makeRandomDot();
-			break;
-*/			
+			
 		// 'p' key
 		case 80:
 			if(worms[0].paused) {
