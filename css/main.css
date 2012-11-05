@@ -4,8 +4,9 @@ body {
 	font-family: 'Open Sans', sans-serif;
 }
 
-section #main {
+section#main {
 	width: 700px;
+	margin: 0 auto;
 }
 
 h1 {
@@ -47,10 +48,6 @@ a:hover {
 pre code {
 	border-radius: 6px;
 	box-shadow: 0px 0px 4px #ccc;
-}
-
-section #instructions {
-	text-align: center;
 }
 
 img {
