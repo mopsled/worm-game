@@ -7,7 +7,7 @@ var LOCAL_STORAGE_HIGH_SCORE = 'highScore';
 var GRID_OUTER_WIDTH = '2.0';
 var GRID_OUTER_COLOR = '#000';
 
-var DOT_COLORS = Array('88A825', '345BC1', 'ED8C2B', '05F2F2', 'CF4A39', '51386E');
+var DOT_COLORS = Array('88A825', '345BC1', 'ED8C2B', '04BFBF', 'CF4A39', '51386E');
 
 var ITEMS = Array('FOOD', 'SHRINK', 'GROW', 'SLOW_TIME', 'BOMB', 'PORTAL');
 
@@ -100,7 +100,7 @@ function init() {
 	game.paused = false;
 	game.score = 0;
 	game.highScore = retrieveHighScore(); 
-	game.players = 1;
+	game.players = 2;
 
 	for (var i = 0; i < game.players; i++) {
 		worms.push(new Object());
