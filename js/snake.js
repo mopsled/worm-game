@@ -417,7 +417,7 @@ function makeRandomDots() {
 	game.dots.push(dot);
 	game.foodOut = true;
 
-	var pickupType = Math.random(ITEMS.length);
+	var pickupType = Math.floor(Math.random() * ITEMS.length);
 	if (pickupType != 0 && Math.random() > 0.6) {
 		position = getUnusedPosition();
 		var pickup = new Object();
