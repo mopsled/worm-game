@@ -7,9 +7,9 @@ var LOCAL_STORAGE_HIGH_SCORE = 'highScore';
 var GRID_OUTER_WIDTH = '2.0';
 var GRID_OUTER_COLOR = '#000';
 
-var DOT_COLORS = Array('88A825', '345BC1', 'ED8C2B', '04BFBF', 'CF4A39', '51386E');
+var DOT_COLORS = Array('88A825', '345BC1', 'ED8C2B', '04BFBF', 'CF4A39', '51386E', 'D85AD9');
 
-var ITEMS = Array('FOOD', 'SHRINK', 'GROW', 'SLOW_TIME', 'BOMB', 'PORTAL');
+var ITEMS = Array('FOOD', 'SHRINK', 'GROW', 'SLOW_TIME', 'BOMB', 'PORTAL', 'QUICKEN_TIME');
 
 var FOOD_ACTION = function(player, value) {
 	console.log("FOOD");
@@ -31,19 +31,13 @@ var FOOD_ACTION = function(player, value) {
 };
 
 var SHRINK_ACTION = function(player) {
-	console.log("SHRINK");
 	worms[player].length = Math.max(1, Math.floor(worms[player].length / 2));
 };
 
 var GROW_ACTION = function(player) {
-	console.log("GROW " + player);
-
 	finalLength = Math.floor(worms[player].length * 1.5) % worms[player].maxSize;
 
 	growUpdateId = setInterval(function() {
-		console.log("GROWING");
-		console.log("worms[player].length = " + worms[player].length);
-		console.log("finalLength = " + finalLength);
 		if (worms[player].length < finalLength) {
 			worms[player].length += 1;
 		} else {
@@ -53,7 +47,6 @@ var GROW_ACTION = function(player) {
 };
 
 var SLOW_TIME_ACTION = function(player) {
-	console.log("SLOW TIME");
 	originalSpeed = game.speed;
 	slowSpeed = originalSpeed * 2;
 	clearInterval(game.updateBoardIntervalId);
@@ -66,17 +59,21 @@ var SLOW_TIME_ACTION = function(player) {
 };
 
 var BOMB_ACTION = function(player) {
-	console.log("BOMB");
 	resetBoard();
 };
 
 var PORTAL_ACTION = function(player) {
-	console.log("PORTAL");
 	worms[player].position.x = getRandomX();
 	worms[player].position.y = getRandomY();
 };
 
-var ITEMS_ACTIONS = Array(FOOD_ACTION, SHRINK_ACTION, GROW_ACTION, SLOW_TIME_ACTION, BOMB_ACTION, PORTAL_ACTION);
+var QUICKEN_TIME = function(player) {
+	game.speed = Math.floor(game.speed * 1.05);
+	clearInterval(game.updateBoardIntervalId);
+	game.updateBoardIntervalId = setInterval('updateBoard()', game.speed);
+};
+
+var ITEMS_ACTIONS = Array(FOOD_ACTION, SHRINK_ACTION, GROW_ACTION, SLOW_TIME_ACTION, BOMB_ACTION, PORTAL_ACTION, QUICKEN_TIME);
 			
 var TIME_PER_STAGE = 250;
 var POWERUP_STAGES = 20;
