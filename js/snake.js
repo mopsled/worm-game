@@ -1,5 +1,5 @@
 var game = new Object();
-var worms = Array(new Object(), new Object());
+var worms = Array();
 
 var LOCAL_STORAGE_VERSION = 'version';
 var LOCAL_STORAGE_HIGH_SCORE = 'highScore';
@@ -92,15 +92,18 @@ function init() {
 	//		moves faster than the grid updates
 	//	.maxSize - the maximum length of a worm on board, and the worm.previousCells array
 	//	.position - X & Y coordinates for worm position
+	//	.players - 1 or 2, the number of worms on the board
 	
 	game.canvas = document.getElementById('game');
 	game.context = game.canvas.getContext('2d');
 	game.speed = 70;
 	game.paused = false;
 	game.score = 0;
-	game.highScore = retrieveHighScore();
+	game.highScore = retrieveHighScore(); 
+	game.players = 1;
 
-	for (var i = 0; i < 2; i++) {
+	for (var i = 0; i < game.players; i++) {
+		worms.push(new Object());
 		worms[i].direction = 'none';
 		worms[i].previousCells = new Array();
 		worms[i].length = 1;
@@ -141,7 +144,7 @@ function init() {
 	// Position properties: worm.position
 	//	.x, .y - the current x and y position (in grid value, not pixel value) of the worm
 
-	for (var i = 0; i < 2; i++) {
+	for (var i = 0; i < game.players; i++) {
 		worms[i].position = new Object();
 		worms[i].position.x = getRandomX();
 		worms[i].position.y = getRandomY();
@@ -168,7 +171,7 @@ function updateBoard() {
 	resetCanvas(game.canvas);
 	drawGrid(game.context);
 
-	for (var i = 0; i < 2; i++) {
+	for (var i = 0; i < game.players; i++) {
 		// If the worm is currently playing, add its current position to previousCells
 		if(worms[i].direction != 'none') {
 			position = new Object();
@@ -207,9 +210,12 @@ function updateBoard() {
 		}
 	}
 
-	var bothWormsMoving = worms[0].direction != 'none' && worms[1].direction != 'none';
+	var allWormsMoving = true;
+	for (var i = 0; i < game.players; ++i) {
+		allWormsMoving = (worms[i].direction != 'none') && allWormsMoving;
+	}
 
-	if(bothWormsMoving) {
+	if(allWormsMoving) {
 		if(!game.foodOut) {
 			makeRandomDots();
 		}
@@ -462,15 +468,15 @@ function retrieveHighScore(score) {
 
 // Returns true if the worm has collided with itself or the other worm
 function collision(player) {
-	var otherPlayer = (player +  1) % 2;
-
 	// if worm heads collide
-	if (worms[0].position.x == worms[1].position.x  &&
-		worms[0].position.y == worms[1].position.y) {
-		return true;
+	if (game.players == 2) {
+		if (worms[0].position.x == worms[1].position.x  &&
+			worms[0].position.y == worms[1].position.y) {
+			return true;
+		}
 	}
 
-	for (var i = 0; i < 2; i++) {
+	for (var i = 0; i < game.players; i++) {
 		for (var n = 0; n != worms[i].length - 1; n++) {
 			if (worms[player].position.x == worms[i].previousCells[worms[i].previousCells.length - n - 1].x &&
 				worms[player].position.y == worms[i].previousCells[worms[i].previousCells.length - n - 1].y) {
@@ -488,8 +494,10 @@ function collision(player) {
 function resetBoard() {
 	game.score = 0;
 	game.dot.exists = false;
+	worms = new Array();
 
-	for (var i = 0; i < 2; i++) {
+	for (var i = 0; i < game.players; i++) {
+		worms.push(new Object());
 		worms[i].direction = "none";
 		worms[i].previousCells = new Array();
 		worms[i].length = 1;
@@ -499,6 +507,7 @@ function resetBoard() {
 		game.dots = new Array();
 		game.foodOut = false;
 		
+		worms[i].position = new Object();
 		worms[i].position.x = 1 + Math.floor(Math.random()*(game.grid.width/game.grid.size - 2));
 		worms[i].position.y = 1 + Math.floor(Math.random()*(game.grid.height/game.grid.size - 2));
 	}	
@@ -514,7 +523,7 @@ function getUnusedPosition() {
 		};
 		positionInWorm = false;
 
-		for (var j = 0; j < 2; j++) {
+		for (var j = 0; j < game.players; j++) {
 			var lastCellInWorm = worms[j].previousCells.length - worms[j].length;
 
 			for(var i = worms[j].previousCells.length - 1; i > lastCellInWorm; --i) {
@@ -643,7 +652,7 @@ function commonKeyHit(e) {
 	switch(e.keyCode) {
 		// 'g' key
 		case 71:
-			for (var i = 0; i < 2; ++i) {
+			for (var i = 0; i < game.players; ++i) {
 				if(worms[i].direction != 'none') {
 					worms[i].length += 1;
 				}
@@ -659,13 +668,29 @@ function commonKeyHit(e) {
 			}
 			
 			game.paused = !game.paused;
-			
 			break;
 			
 		// '\' key
 		case 220:
 			setHighScore(0);
 			resetBoard();
+			break;
+
+		// 1 key
+		case 49:
+			if (game.players != 1) {
+				game.players = 1;
+				resetBoard();
+			}
+			break;
+
+		// 2 key
+		case 50:
+			if (game.players != 2) {
+				game.players = 2;
+				resetBoard();
+			}
+			break;
 	}
 	
 	return false;
