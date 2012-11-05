@@ -12,7 +12,6 @@ var DOT_COLORS = Array('88A825', '345BC1', 'ED8C2B', '04BFBF', 'CF4A39', '51386E
 var ITEMS = Array('FOOD', 'SHRINK', 'GROW', 'SLOW_TIME', 'BOMB', 'PORTAL', 'QUICKEN_TIME');
 
 var FOOD_ACTION = function(player, value) {
-	console.log("FOOD");
 	worms[player].length = (worms[player].length + 1);
 
 	var dotScore = -1;
@@ -605,6 +604,7 @@ function wormOneKeyHit(e) {
 			break;
 	}
 	
+	e.preventDefault();
 	return false;
 }
 
