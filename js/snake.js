@@ -68,7 +68,7 @@ var PORTAL_ACTION = function(player) {
 };
 
 var QUICKEN_TIME = function(player) {
-	game.speed = Math.floor(game.speed * 1.05);
+	game.speed = game.speed / 1.02;
 	clearInterval(game.updateBoardIntervalId);
 	game.updateBoardIntervalId = setInterval('updateBoard()', game.speed);
 };
@@ -417,7 +417,7 @@ function makeRandomDots() {
 	game.dots.push(dot);
 	game.foodOut = true;
 
-	var pickupType = Math.floor(Math.random()*ITEMS.length);
+	var pickupType = ITEMS.length - 1;
 	if (pickupType != 0 && Math.random() > 0.6) {
 		position = getUnusedPosition();
 		var pickup = new Object();
