@@ -12,6 +12,7 @@ var DOT_COLORS = Array('88A825', '345BC1', 'ED8C2B', '04BFBF', 'CF4A39', '51386E
 var ITEMS = Array('FOOD', 'SHRINK', 'GROW', 'SLOW_TIME', 'BOMB', 'PORTAL');
 
 var FOOD_ACTION = function(player, value) {
+	console.log("FOOD");
 	worms[player].length = (worms[player].length + 1);
 
 	var dotScore = -1;
@@ -30,31 +31,47 @@ var FOOD_ACTION = function(player, value) {
 };
 
 var SHRINK_ACTION = function(player) {
+	console.log("SHRINK");
 	worms[player].length = Math.max(1, Math.floor(worms[player].length / 2));
 };
 
 var GROW_ACTION = function(player) {
-	worms[player].length = Math.floor(worms[player].length * 1.5)  % worms[player].maxSize;
+	console.log("GROW " + player);
+
+	finalLength = Math.floor(worms[player].length * 1.5) % worms[player].maxSize;
+
+	growUpdateId = setInterval(function() {
+		console.log("GROWING");
+		console.log("worms[player].length = " + worms[player].length);
+		console.log("finalLength = " + finalLength);
+		if (worms[player].length < finalLength) {
+			worms[player].length += 1;
+		} else {
+			clearInterval(growUpdateId);
+		}
+	}, game.speed);
 };
 
 var SLOW_TIME_ACTION = function(player) {
+	console.log("SLOW TIME");
 	originalSpeed = game.speed;
-	game.speed = originalSpeed * 2;
+	slowSpeed = originalSpeed * 2;
 	clearInterval(game.updateBoardIntervalId);
-	game.updateBoardIntervalId = setInterval('updateBoard()', game.speed);
+	game.updateBoardIntervalId = setInterval('updateBoard()', slowSpeed);
 
 	setTimeout(function() {
-		game.speed = originalSpeed;
 		clearInterval(game.updateBoardIntervalId);
 		game.updateBoardIntervalId = setInterval('updateBoard()', game.speed);
 	}, 3000);
 };
 
 var BOMB_ACTION = function(player) {
+	console.log("BOMB");
 	resetBoard();
 };
 
 var PORTAL_ACTION = function(player) {
+	console.log("PORTAL");
 	worms[player].position.x = getRandomX();
 	worms[player].position.y = getRandomY();
 };
@@ -503,6 +520,7 @@ function resetBoard() {
 		worms[i].length = 1;
 		worms[i].movedThisTurn = false; 
 		worms[i].cachedMove = 'none';
+		worms[i].maxSize = 100;
 
 		game.dots = new Array();
 		game.foodOut = false;
